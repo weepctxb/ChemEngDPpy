@@ -17,6 +17,26 @@ Quick tip: Always use the function documentation to check the required units to 
 
 ## Mechanical Design & Ancillary Equipment Sizing - dsg
 
+Constants:
+
+- Patm = 14.696 - standard atmospheric pressure (psi)
+
+- Patmb = 1.01325 - standard atmospheric pressure (bar)
+
+- Troom = 77 - ambient temperature (degF)
+
+- tmin = 1/4 - universal minimum allowable vessel thickness (in)
+
+- tc = 0.125 - corrosion allowance (in) for both corrosive and non-corrosive conditions (default is 1/8)
+
+- rhosteel = 0.2836 - density of SA-285C/SA-387B/carbon/low-alloy steels (lb/in^3)
+
+- g = 9.80665 - standard Earth gravitational acceleration (m/s^2)
+
+- R = 8.31446261815324 - universal ideal gas constant (J/(K.mol))
+
+- Ta = 10. - minimum heat exchanger temperature approach (K)
+
 Functions:
 
 - dsg.designhorzpres - perform entire mechanical design for horizontal pressure vessels
@@ -41,11 +61,11 @@ To call intermediate functions (e.g. calculate shell thickness, calculate max. a
 
 Constants:
 
-- capex.CEPCIyy - retrieves annual CEPCI index for 20yy (where yy = 01, 18 or 19)
+- capex.CEPCI[20yy] - retrieves annual CEPCI index for 20yy (where yy = 01, 18 or 19)
 
-- capex.USSGyy - retrieves USD:SGD forex rate for 20yy year-average
+- capex.USSG[20yy] - retrieves USD:SGD forex rate for 20yy year-average
 
-- capex.CPIzzyy - retrieves country zz's consumer price index (CPI) for 20yy year-average (where zz = 'SG' or 'US')
+- capex.CPI['zz'][20yy] - retrieves country zz's consumer price index (CPI) for 20yy year-average (where zz = 'SG' or 'US')
 
   - Reference year for CAPCOST = 2001 (as of Turton et al. 5th Ed.)
 
@@ -75,16 +95,6 @@ To do: Import relevant data on constants for MOC and pressure factors as needed,
 
 Constants:
 
-- opex.CEPCIyy - retrieves annual CEPCI index for 20yy (where yy = 01, 18 or 19)
-
-- opex.USSGyy - retrieves USD:SGD forex rate for 20yy year-average
-
-- opex.CPIzzyy - retrieves country zz's consumer price index (CPI) for 20yy year-average (where zz = 'SG' or 'US')
-
-  - Reference year for CAPCOST = 2001 (as of Turton et al. 5th Ed.)
-
-  - Reference year for utilities cost = 2018 (as of Turton et al. 5th Ed.)
-
 - opex.SF - retrieves stream factor for plant operation
 
 - opex.runtime - retrieves operational runtime per annum
@@ -95,7 +105,7 @@ Constants:
 
 - opex.yearww - retrieves number of work weeks per year after leave entitlements
 
-- opex.utilxxx - utility cost for xxx (USD/GJ basis), where xxx =
+- opex.util['xxx'] - utility cost for xxx (USD/GJ basis), where xxx =
 
   - "HPS" for high-pressure steam (41 barg, 254 degC)
 
