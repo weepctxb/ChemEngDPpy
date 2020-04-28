@@ -44,17 +44,27 @@ class MechDesign(object):
         self.tEC = tEC
 
 
-class Reactor(MechDesign):
-    def __init__(self, impellers=0, impellerpower=0.):
-        super().__init__(self)
-        self.impellers = impellers
-        self.impellerpower = impellerpower
+class Impellers(object):
+    def __init__(self, numimpel=None, impelpower=None, impeltype=None):
+        self.numimpel = numimpel
+        self.impelpower = impelpower
+        self.impeltype = impeltype
 
 
-class Distillation(MechDesign):
-    def __init__(self, trays=0):
+class Trays(object):
+    def __init__(self, numtrays=None, traytype=None):
+        self.numtrays = numtrays
+        self.traytype = traytype
+
+
+class Reactor(MechDesign, Impellers):
+    def __init__(self):
         super().__init__(self)
-        self.trays = trays
+
+
+class Distillation(MechDesign, Trays):
+    def __init__(self):
+        super().__init__(self)
 
 
 class Compressor(object):
@@ -193,7 +203,6 @@ def maxstress(Td, MOC='387B'):
         MOC = '317L'
         a = (-20., 68., 200., 400., 600., 800., 1000., 1200., 1400., 1600.)
         b = ('error', 25286., 22957., 20957., 19400., 17633., 16733., 15767., 12857., 8300., 'error')
-        Smax = stepwise_leq(a, b, Td)
 
     elif '316Ti' in str.upper(MOC):
 
@@ -202,14 +211,12 @@ def maxstress(Td, MOC='387B'):
              932., 977., 1022., 1067., 1112.)
         b = ('error', 20015., 19435., 18130., 16969., 16824., 16534., 16244., 16099., 15954., 15809., 15664., 15519.,
              15374., 15229., 14475., 11647., 'error')
-        Smax = stepwise_leq(a, b, Td)
 
     elif '316L' in str.upper(MOC):
 
         MOC = '316L'
         a = (-22., 302., 392., 482., 572., 617., 662., 707., 752., 797., 842., 887.)
         b = ('error', 16679., 15809., 14939., 14214., 13880., 13648., 13460., 13184., 12908., 12734., 12560., 'error')
-        Smax = stepwise_leq(a, b, Td)
 
     elif '304' in str.upper(MOC):
 
@@ -218,15 +225,15 @@ def maxstress(Td, MOC='387B'):
              932., 977., 1022., 1067., 1112.)
         b = ('error', 20015., 19870., 19435., 18855., 18275., 17695., 16824., 16534., 16099., 15809., 15519.,
              15229., 14939., 14649., 14402., 14214., 13532., 11545., 9485., 'error')
-        Smax = stepwise_leq(a, b, Td)
 
     else:  # use default MOCs
 
         a = (-20., 650., 750., 800., 850., 900.)
         b = ('error', 13750., 15000., 14750., 14200., 13100., 'error')
         c = ('error', '285C', '387B', '387B', '387B', '387B', 'error')
-        Smax = stepwise_leq(a, b, Td)
         MOC = stepwise_leq(a, c, Td)
+
+    Smax = stepwise_leq(a, b, Td)
 
     return Smax, MOC
 
@@ -760,7 +767,7 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
 
     mc /= 3600.  # convert kg/h to kg/s
 
-    Q = mc * cpc * (Tcout - Tcin)  # calculate heat transfer rate
+    Q = mc * cpc * (Tcout - Tcin)  # calculate heat transfer rate in W
 
     if (Thout - Tcin) == (Thin - Tcout):
         LMTD = Thout - Tcin

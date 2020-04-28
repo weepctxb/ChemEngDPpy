@@ -87,6 +87,8 @@ Functions:
 
 - capex.grasscost - calculates grassroots cost
 
+- capex.annualcapex - calculates total annualised capital cost estimated based on an assumed payback period
+
 ------------------------------------------------
 
 ## OPEX Calculation - opex
@@ -125,7 +127,9 @@ Functions:
 
 - opex.labourcost - calculates annualised labour cost
 
-- opex.costofutil - calculates cost of utilities
+- opex.costofraw - calculates annualised cost of raw materials
+
+- opex.costofutil - calculates annualised cost of utilities
 
 - opex.costofmanfc - calculates all components of annualised total cost of manufacture (COM)
 

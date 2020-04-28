@@ -9,7 +9,7 @@ SF = runtime / (365*24)  # Stream factor
 
 # Utility Costs (per GJ basis)
 # From "Analysis, Synthesis & Design of Chemical Processes, 5th Ed. by Turton et al."
-util = {
+utilprice = {
     'LPS': 4.54,  # Utility cost for LPS (5 barg, 160 degC) ($/GJ)
     'MPS': 4.77,  # Utility cost for MPS (10 barg, 184 degC) ($/GJ)
     'HPS': 5.66,  # Utility cost for HPS (41 barg, 254 degC) ($/GJ)
@@ -57,10 +57,13 @@ def labourcost(P=0, Nnp=0, wage=0):
     return COL, NOL
 
 
-def costofutil(HPS=0, MPS=0, LPS=0, CW=0, ChW=0, LTR=0, VLTR=0, elec=0):
+def costofutil(utiltuple=None, HPS=0, MPS=0, LPS=0, CW=0, ChW=0, LTR=0, VLTR=0, elec=0):
 
     """
     Calculates the annualised cost of utilities
+    Either key in utilities as a tuple, or as separate numerical inputs (see param):
+    :param utiltuple: tuple containing annual consumption of each type of utility (GJ/yr), in the following order:
+    HPS, MPS, LPS, CW, ChW, LTR, VLTR, elec
     :param HPS: annual consumption of high-pressure steam (GJ/yr)
     :param MPS: annual consumption of medium-pressure steam (GJ/yr)
     :param LPS: annual consumption of low-pressure steam (GJ/yr)
@@ -72,30 +75,38 @@ def costofutil(HPS=0, MPS=0, LPS=0, CW=0, ChW=0, LTR=0, VLTR=0, elec=0):
     :return: CUT: annualised cost of utilities ($/yr)
     """
 
-    a = np.array([util['HPS'], util['MPS'], util['LPS'],
-         util['CW'], util['ChW'],
-         util['LTR'], util['VLTR'], util['elec']])
+    a = np.array([utilprice['HPS'], utilprice['MPS'], utilprice['LPS'],
+                  utilprice['CW'], utilprice['ChW'],
+                  utilprice['LTR'], utilprice['VLTR'], utilprice['elec']])
 
-    b = np.array([HPS, MPS, LPS, CW, ChW, LTR, VLTR, elec])
+    if utiltuple is not None:
+        b = np.array(utiltuple)
+    else:
+        b = np.array([HPS, MPS, LPS, CW, ChW, LTR, VLTR, elec])
 
     CUT = a @ b.T
 
     return CUT
 
 
-def costofraw(rawmaterials, unitprices):
+def costofraw(rawmaterialtuple, unitpricetuple):
 
     """
     Calculates the annualised cost of raw materials
-    :param rawmaterials: annual flow of raw materials, in a tuple (flow/yr)
-    :param unitprices: per-flow unit cost price of raw materials, in a tuple in the same order as rawmaterials ($/flow)
+    :param rawmaterialtuple: annual flow of raw materials, in a tuple (flow/yr)
+    :param unitpricetuple: per-flow unit cost price of raw materials, in a tuple in the same order as rawmaterials ($/flow)
     :return: CRM: annualised cost of raw materials ($/yr)
     """
 
-    if type(rawmaterials) is tuple:
-        a = np.array(rawmaterials)
-    if type(unitprices) is tuple:
-        b = np.array(unitprices)
+    if type(rawmaterialtuple) is tuple:
+        a = np.array(rawmaterialtuple)
+    else:
+        raise TypeError('rawmaterials should be of type tuple')
+
+    if type(unitpricetuple) is tuple:
+        b = np.array(unitpricetuple)
+    else:
+        raise TypeError('rawmaterials should be of type tuple')
 
     if a.size != b.size:
         raise ValueError('Number of unit prices do not match number of raw materials!')

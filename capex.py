@@ -33,18 +33,16 @@ CPI = {
 }
 
 
-def eqptpurcost(A, K1, K2, K3):
+def eqptpurcost(A, Ktuple):
 
     """
     Calculate equipment purchased cost (Cp^o) cost at ambient pressure and using carbon steel as MOC
     :param A: equipment capacity (various units)
-    :param K1: cost correlation factor 1
-    :param K2: cost correlation factor 2
-    :param K3: cost correlation factor 3
+    :param Ktuple: tuple of cost correlation factors (K1, K2, K3)
     :return: Cpo: equipment purchased cost ($)
     """
 
-    Cpo = pow(10., K1 + K2 * np.log10(A) + K3 * (np.log10(A)) ** 2)
+    Cpo = pow(10., Ktuple[0] + Ktuple[1] * np.log10(A) + Ktuple[2] * (np.log10(A)) ** 2)
 
     return Cpo
 
@@ -69,35 +67,32 @@ def pressurefacves(D, ts, P):
     return FP
 
 
-def pressurefacanc(P, C1, C2, C3):
+def pressurefacanc(P, Ctuple):
 
     """
     Calculate pressure factor (F_P) for ancillary equipment (e.g. pumps and exchangers)
     at specified elevated pressure and MOC
     :param P: pressure (barg)
-    :param C1: pressure correlation factor 1
-    :param C2: pressure correlation factor 2
-    :param C3: pressure correlation factor 3
+    :param Ctuple: tuple of pressure correlation factors (C1, C2, C3)
     :return: FP: amplification factor for pressure
     """
 
-    FP = eqptpurcost(P, C1, C2, C3)  # borrowing quadratic-exponential relation
+    FP = eqptpurcost(P, Ctuple)  # borrowing quadratic-exponential relation
 
     return FP
 
 
-def baremodfac(B1, B2, FM, FP):
+def baremodfac(Btuple, FM, FP):
 
     """
     Calculate bare module factor (F_BM) at specified elevated pressure and MOC
-    :param B1: bare module correlation factor 1
-    :param B2: bare module correlation factor 2
+    :param Btuple: tuple of bare module correlation factors (B1, B2)
     :param FM: amplification factor for material of construction (MOC)
     :param FP: amplification factor for pressure
     :return: FBM: bare module factor (dimensionless)
     """
 
-    FBM = B1 + B2 * FM * FP
+    FBM = Btuple[0] + Btuple[1] * FM * FP
 
     return FBM
 
@@ -146,7 +141,7 @@ def grasscost(CTM, Cpo):
 def annualcapex(FCI, pbp=3):
 
     """
-    Estimate total annualised cost based on assumed payback period.
+    Estimate total annualised capital cost based on assumed payback period
     :param FCI: fixed capital investment (= CTM or total module cost for brownfield projects, or =CGR or grassroots cost
     for greenfield projects) ($)
     :param pbp: payback period estimate (yr, default = 3). If a value of pbp is assumed, note that this should only be
