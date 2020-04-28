@@ -33,6 +33,122 @@ CPI = {
 }
 
 
+# Equipment cost correlation parameters
+# A tuple of (K1, K2, K3, Amin, Amax, n)
+# where (K1, K2, K3) = cost correlation params, (Amin, Amax) = min/max capacity (range of validity), n = cost exponent
+# To access, e.g. eqptcostlib['pump']['centrifugal']
+eqptcostlib = {
+    'compressor': {
+        'centrifugal': (2.2897, 1.3604, -0.1027, 450., 3000., 0.67),
+        'axial': (2.2897, 1.3604, -0.1027, 450., 3000., 0.67),
+        'reciprocating': (2.2897, 1.3604, -0.1027, 450., 3000., 0.84),
+        'rotary': (5.0355, -1.8002, 0.8253, 18., 950., 0.6)
+    },
+    'pump': {
+        'reciprocating': (3.8696, 0.3161, 0.1220, .1, 200., 0.6),
+        'positivedisp': (3.4771, 0.1350, 0.1438, 1., 100., 0.6),
+        'centrifugal': (3.3892, 0.0536, 0.1538, 1., 300., 0.67),
+    },
+    'heatexc': {
+        'fixedtube': (4.3247, -0.3030, 0.1634, 10., 1000., 0.62),
+        'Utube': (4.1884, -0.2503, 0.1974, 10., 1000., 0.53),
+        'kettle': (4.4646, -0.5277, 0.3955, 10., 1000., 0.59),
+        'doublepipe': (3.3444, 0.2745, -0.0472, 1., 10., 0.59),
+        'multipipe': (2.7652, 0.7282,0.0783, 10., 100.)
+    },
+    'vessel': {
+        'horizontal': (3.5565, 0.3776, 0.0905, 0.1, 628., 0.5),
+        'vertical': (3.4974, 0.4485, 0.1074, 0.3, 520., 0.6)
+    },
+    'trays': {
+        'sieve': (2.9949, 0.4465, 0.3961, 0.7, 12.3, 0.86),
+        'valve': (3.3322, 0.4838, 0.3434, 0.7, 10.5, 1.0),
+        'demister': (3.2353, 0.4838, 0.3434, 0.7, 10.5, 1.0)
+    },
+    'mixer': {
+        'impeller': (3.8511, 0.7009, -0.0003, 5., 150., 0.6),
+        'propeller': (4.3207, 0.0359, 0.1346, 5., 500., 0.5),
+        'turbine': (3.4092, 0.4896, 0.0030, 5., 150., 0.3)
+    }
+}
+
+
+# Equipment pressure factor correlation parameters
+# A tuple of (C1, C2, C3, Pmin, Pmax)
+# where (C1, C2, C3) = cost correlation params, (Pmin, Pmax) = min/max pressure (range of validity)
+# To access, e.g. pressurefaclib['pump']['centrifugal']
+pressurefaclib = {
+    'compressor': {
+        'centrifugal': (0., 0., 0., -np.inf, np.inf),
+        'axial': (0., 0., 0., -np.inf, np.inf),
+        'reciprocating': (0., 0., 0., -np.inf, np.inf),
+        'rotary': (0., 0., 0., -np.inf, np.inf)
+    },
+    'pump': {
+        'reciprocating': (-0.245382, 0.259016, -0.01363, 10., 100.),
+        'positivedisp': (-0.245382, 0.259016, -0.01363, 10., 100.),
+        'centrifugal': (-0.3935, 0.3957, -0.00226, 10., 100.),
+    },
+    'heatexc': {
+        'fixedtube': (0.03881, -0.11272, 0.08183, 5., 140.),
+        'Utube': (0.03881, -0.11272, 0.08183, 5., 140.),
+        'kettle': (0.03881, -0.11272, 0.08183, 5., 140.),
+        'doublepipe': (0.6072, -0.9120, 0.3327, 40., 100.),
+        'multipipe': (0.6072, -0.9120, 0.3327, 40., 100.)
+    },  # use the pressure factor equation for vessels instead
+    'trays': {
+        'sieve': (0., 0., 0., -np.inf, np.inf),
+        'valve': (0., 0., 0., -np.inf, np.inf),
+        'demister': (0., 0., 0., -np.inf, np.inf)
+    },
+    'mixer': {
+        'impeller': (0., 0., 0., -np.inf, np.inf),
+        'propeller': (0., 0., 0., -np.inf, np.inf),
+        'turbine': (0., 0., 0., -np.inf, np.inf)
+    }
+}
+
+
+# Equipment bare module correlation parameters
+# A tuple of (B1, B2)
+# where (B1, B2) = bare module correlation params
+# To access, e.g. baremodlib['pump']['centrifugal']
+baremodlib = {
+    'compressor': {  # FBM = (B2 for CS) * FM = (B2 for CS) * (B2 for material / B2 for CS)
+        'centrifugal': (0., 2.8),
+        'axial': (0., 3.8),
+        'reciprocating': (0., 3.4),
+        'rotary': (0., 2.4)
+    },
+    'pump': {  # FBM = B1 + B2 * FM * FP
+        'reciprocating': (1.89, 1.35),
+        'positivedisp': (1.89, 1.35),
+        'centrifugal': (1.89, 1.35),
+    },
+    'heatexc': {  # FBM = B1 + B2 * FM * FP
+        'fixedtube': (1.63, 1.66),
+        'Utube': (1.63, 1.66),
+        'kettle': (1.63, 1.66),
+        'doublepipe': (1.74, 1.55),
+        'multipipe': (1.74, 1.55)
+    },
+    'vessel': {  # FBM = B1 + B2 * FM * FP
+        'horizontal': (1.49, 1.52),
+        'vertical': (2.25, 1.82)
+    },
+    'trays': {  # FBM = FM for trays. Assuming tray quantity factor Fq = 1.
+        'sieve': (0., 1.),
+        'valve': (0., 1.),
+        'demister': (0., 1.)
+    },
+    'mixer': {  # FBM = 1.38 (constant)
+        'impeller': (1.38, 0.),
+        'propeller': (1.38, 0.),
+        'turbine': (1.38, 0.)
+    }
+}
+
+
 def eqptpurcost(A, Ktuple):
 
     """
