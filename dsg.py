@@ -17,7 +17,7 @@ class MechDesign(object):
     def __init__(self, Po=Patm, To=Troom, Di=None, L=None, rho=rhosteel,
                  Pd=None, Td=None, MOC=None, Smax=None, E=0.85, tp=tmin, tc=None, ts=None, tsfinal=None,
                  tv=None, tw=None,
-                 Do=None, W=None, V=None,
+                 Do=None, W=None, V=None, Vi=None,
                  EM=None, tE=None, tEC=None):
         self.Po = Po
         self.To = To
@@ -38,9 +38,23 @@ class MechDesign(object):
         self.Do = Do
         self.W = W
         self.V = V
+        self.Vi = Vi
         self.EM = EM
         self.tE = tE
         self.tEC = tEC
+
+
+class Reactor(MechDesign):
+    def __init__(self, impellers=0, impellerpower=0.):
+        super().__init__(self)
+        self.impellers = impellers
+        self.impellerpower = impellerpower
+
+
+class Distillation(MechDesign):
+    def __init__(self, trays=0):
+        super().__init__(self)
+        self.trays = trays
 
 
 class Compressor(object):
@@ -72,7 +86,7 @@ class Pump(object):
 
 class HeatExc(object):
     def __init__(self, mh=None, mc=None, cph=None, cpc=None, Thin=None, Thout=None, Tcin=None, Tcout=None,
-                 U=None, F=0.9, Ns=1, A=None):
+                 U=None, F=0.9, Ns=1, area=None):
         self.mh = mh
         self.mc = mc
         self.cph = cph
@@ -84,7 +98,7 @@ class HeatExc(object):
         self.U = U
         self.F = F
         self.Ns = Ns
-        self.A = A
+        self.area = area
 
 
 def stepwise_leq(a, b, x):
@@ -176,16 +190,41 @@ def maxstress(Td, MOC='387B'):
 
     if '317L' in str.upper(MOC):
 
-        MOC = 'SA-317L'
+        MOC = '317L'
         a = (-20., 68., 200., 400., 600., 800., 1000., 1200., 1400., 1600.)
         b = ('error', 25286., 22957., 20957., 19400., 17633., 16733., 15767., 12857., 8300., 'error')
         Smax = stepwise_leq(a, b, Td)
 
-    else:
+    elif '316Ti' in str.upper(MOC):
+
+        MOC = '316Ti'
+        a = (-22., 302., 392., 482., 572., 617., 662., 707., 752., 797., 842., 887.,
+             932., 977., 1022., 1067., 1112.)
+        b = ('error', 20015., 19435., 18130., 16969., 16824., 16534., 16244., 16099., 15954., 15809., 15664., 15519.,
+             15374., 15229., 14475., 11647., 'error')
+        Smax = stepwise_leq(a, b, Td)
+
+    elif '316L' in str.upper(MOC):
+
+        MOC = '316L'
+        a = (-22., 302., 392., 482., 572., 617., 662., 707., 752., 797., 842., 887.)
+        b = ('error', 16679., 15809., 14939., 14214., 13880., 13648., 13460., 13184., 12908., 12734., 12560., 'error')
+        Smax = stepwise_leq(a, b, Td)
+
+    elif '304' in str.upper(MOC):
+
+        MOC = '304'
+        a = (-22., 149., 212., 257., 302., 392., 482., 572., 617., 662., 707., 752., 797., 842., 887.,
+             932., 977., 1022., 1067., 1112.)
+        b = ('error', 20015., 19870., 19435., 18855., 18275., 17695., 16824., 16534., 16099., 15809., 15519.,
+             15229., 14939., 14649., 14402., 14214., 13532., 11545., 9485., 'error')
+        Smax = stepwise_leq(a, b, Td)
+
+    else:  # use default MOCs
 
         a = (-20., 650., 750., 800., 850., 900.)
         b = ('error', 13750., 15000., 14750., 14200., 13100., 'error')
-        c = ('error', 'SA-285C', 'SA-387B', 'SA-387B', 'SA-387B', 'SA-387B', 'error')
+        c = ('error', '285C', '387B', '387B', '387B', '387B', 'error')
         Smax = stepwise_leq(a, b, Td)
         MOC = stepwise_leq(a, c, Td)
 
@@ -299,7 +338,7 @@ def windalw(Do, L, Smax):
     :return: tw: wind/earthquake allowance for vertical vessels (in)
     """
 
-    tw = 0.22 * (Do + 18) * L^2 / (Smax * Do ** 2)
+    tw = 0.22 * (Do + 18.) * (L ** 2.) / (Smax * Do ** 2.)
 
     return tw
 
@@ -317,10 +356,10 @@ def shellthkvert(tp, Di, L, Smax):
     :return: tw: wind allowance (in, optional)
     """
 
-    ts0 = 2 * tp  # dummy initialisation
-    Do = Di + 2 * ts0
+    ts0 = 2. * tp  # dummy initialisation
+    Do = Di + 2. * ts0
     tw = windalw(Do, L, Smax)
-    tv = (tp + (tp+tw)) / 2
+    tv = (tp + (tp+tw)) / 2.
     ts1 = tv + tc  # add corrosion allowance
 
     reltol = 1e-9
@@ -328,9 +367,9 @@ def shellthkvert(tp, Di, L, Smax):
     while abs(ts1 - ts0) / ts0 > reltol and i < 1e3:
         ts0 = ts1
         i += 1
-        Do = Di + 2 * ts0
+        Do = Di + 2. * ts0
         tw = windalw(Do, L, Smax)
-        tv = (tp + (tp+tw)) / 2
+        tv = (tp + (tp+tw)) / 2.
         ts1 = tv + tc  # add corrosion allowance
 
     if i == 1e3:
@@ -383,7 +422,7 @@ def vesselweight(Di, tsfinal, L, rho=rhosteel):
 def vesselvol(Do, L):
 
     """
-    Calculate final volume of vessel with the shell and two 2:1 elliptical heads
+    Calculate final external volume of vessel with the shell and two 2:1 elliptical heads
     :param Do: external diameter (in)
     :param L: internal tangent-to-tangent length/height (in)
     :return: volume of vessel (in^3)
@@ -397,7 +436,7 @@ def vesselvol(Do, L):
     return V
 
 
-def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='SA-387B'):
+def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B'):
 
     """
     The main function to be called for designing horizontal pressure vessels
@@ -421,7 +460,8 @@ def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='SA-387B'):
     tsfinal = ts rounded up to next increment in metal plate thickness (in)
     Do = external diameter (in)
     W = total vessel weight (lb)
-    V = total vessel volume (in^3)
+    V = total vessel external volume (in^3)
+    Vi = total vessel internal volume (in^3)
     """
 
     md = MechDesign()
@@ -438,14 +478,15 @@ def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='SA-387B'):
     md.tc = tc
     md.ts = shellthkhorz(md.tp)
     md.tsfinal = ceilplatethk(md.ts)
-    md.Do = Di + 2 * md.tsfinal
+    md.Do = Di + 2. * md.tsfinal
     md.W = vesselweight(Di, md.tsfinal, L, rho)
     md.V = vesselvol(md.Do, L)
+    md.Vi = np.pi * (Di ** 2.) / 4. * L
 
     return md
 
 
-def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='SA-387B'):
+def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B'):
 
     """
     The main function to be called for designing vertical pressure vessels
@@ -471,7 +512,8 @@ def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='SA-387B'):
     tsfinal = ts rounded up to next increment in metal plate thickness (in)
     Do = external diameter (in)
     W = total vessel weight (lb)
-    V = total vessel volume (in^3)
+    V = total vessel external volume (in^3)
+    Vi = total vessel internal volume (in^3)
     """
 
     md = MechDesign()
@@ -488,9 +530,10 @@ def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='SA-387B'):
     md.tc = tc
     md.ts, md.tv, md.tw = shellthkvert(md.tp, Di, L, md.Smax)
     md.tsfinal = ceilplatethk(md.ts)
-    md.Do = Di + 2 * md.tsfinal
+    md.Do = Di + 2. * md.tsfinal
     md.W = vesselweight(Di, md.tsfinal, L, rho)
     md.V = vesselvol(md.Do, L)
+    md.Vi = np.pi * (Di ** 2.) / 4. * L
 
     return md
 
@@ -518,7 +561,8 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
     tsfinal = ts rounded up to next increment in metal plate thickness (in)
     Do = external diameter (in)
     W = total vessel weight (lb)
-    V = total vessel volume (in^3)
+    V = total vessel external volume (in^3)
+    Vi = total vessel internal volume (in^3)
     """
 
     md = MechDesign()
@@ -538,7 +582,7 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
         raise ValueError('Td out of supported range for both carbon and low-alloy steel!')
 
     ts0 = 1  # dummy initialisation
-    md.Do = Di + 2 * ts0
+    md.Do = Di + 2. * ts0
     md.tp, md.tE, md.tEC = wallthkvac(md.Pd, md.Do, Di, L, md.EM)
     md.tc = tc
     ts1 = shellthkhorz(md.tp)  # horz/vert orientation does not matter for vacuum
@@ -548,7 +592,7 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
     while abs(ts1 - ts0) / ts0 > reltol and i < 1e3:
         ts0 = ts1
         i += 1
-        md.Do = Di + 2 * ts0
+        md.Do = Di + 2. * ts0
         md.tp, md.tE, md.tEC = wallthkvac(md.Pd, md.Do, Di, L, md.EM)
         md.tc = tc
         ts1 = shellthkhorz(md.tp)
@@ -559,9 +603,10 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
 
     md.ts = ts1
     md.tsfinal = ceilplatethk(md.ts)
-    md.Do = Di + 2 * md.tsfinal
+    md.Do = Di + 2. * md.tsfinal
     md.W = vesselweight(Di, md.tsfinal, L, rho)
     md.V = vesselvol(md.Do, L)
+    md.Vi = np.pi * (Di ** 2.) / 4. * L
 
     return
 
@@ -592,13 +637,13 @@ def sizecompressor(m, P1, P2, T1, cp, cv, Z=1.):
     elif P2/P1 < 1.:
         raise ValueError('Outlet pressure smaller than inlet pressure!')
 
-    m = m / 3600
+    m = m / 3600.
     k = cp / cv
     a = (k - 1) / k
     power = (m * Z * R * T1) * (pow((P2 / P1), a) - 1.) / a  # useful power
-    power /= 1000  # convert Pa to kPa
+    power /= 1000.  # convert Pa to kPa
 
-    compeff = np.interp(P2 / P1, [1., 1.5, 2., 3., 6., 10.] ,
+    compeff = np.interp(P2 / P1, [1., 1.5, 2., 3., 6., 10.],
                         [0.65-np.spacing(1), 0.65, 0.75, 0.8, 0.85, 0.85+np.spacing(1)])
 
     comppower = power / compeff
@@ -625,7 +670,7 @@ def sizecompressor(m, P1, P2, T1, cp, cv, Z=1.):
     return comppower, compeff, T2, compressor
 
 
-def sizepump(Q, dP=None, P1=None, P2=None, rho=1000, pumpeff=None):
+def sizepump(Q, dP=None, P1=None, P2=None, rho=1000., pumpeff=None):
 
     """
     Conducts pump sizing by determining required pump power
@@ -648,7 +693,7 @@ def sizepump(Q, dP=None, P1=None, P2=None, rho=1000, pumpeff=None):
         else:
             raise ValueError('Outlet pressure lower than inlet pressure!')
 
-    power = (Q / 3600) * dP  # useful power in kW
+    power = (Q / 3600.) * dP  # useful power in kW
 
     H = dP / (rho * g)  # required head in m
     H_ft = H * 3.281  # required head in ft
@@ -656,10 +701,10 @@ def sizepump(Q, dP=None, P1=None, P2=None, rho=1000, pumpeff=None):
 
     if pumpeff is None:
         if 50 <= H_ft <= 300 and 100 <= Q_gpm <= 1000:
-            a = np.matrix([80., -0.2855, 3.78e-4, -2.38e-7, 5.39e-4, -6.39e-7, 4.e-10])
-            b = np.matrix([1, H_ft, H_ft*Q_gpm, H_ft*pow(Q_gpm, 2),
+            a = np.array([80., -0.2855, 3.78e-4, -2.38e-7, 5.39e-4, -6.39e-7, 4.e-10])
+            b = np.array([1, H_ft, H_ft*Q_gpm, H_ft*pow(Q_gpm, 2),
                            pow(H_ft, 2), pow(H_ft, 2)*Q_gpm, pow(H_ft, 2)*pow(Q_gpm, 2)])
-            pumpeff = (a @ b.T) / 100
+            pumpeff = (a @ b.T) / 100.
         elif 0 <= power <= 300:
             # Maximum useful power for centrifugal pumps = 300 kW
             pumpeff = np.interp(power, [0., 2., 5., 10., 30., 55., 300.],
@@ -687,7 +732,7 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
     Conducts shell-and-tube heat exchanger sizing (counterflow arrangement), where cold process stream is heated,
     by determining required heat exchange area
     Example implementation:
-    A, F = dsg.sizeHE_heater(31715,3246,89,101,160,156,850)
+    area, F = dsg.sizeHE_heater(31715,3246,89,101,160,156,850)
     :param mc: cold stream mass flow rate (kg/h)
     :param cpc: heat capacity of cold stream % J/(kg.K)
     :param Tcin: cold stream inlet temperature (degC)
@@ -698,7 +743,7 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
     :param U: heat transfer coefficient (W/(m^2.degC))
     :param F: user-specified correction factor (if not specified, F will be calculated)
     :param Ns: number of shell passes (default = 1)
-    :return: A: required heat exchange area (m^2)
+    :return: area: required heat exchange area (m^2)
     :return: F: correction factor (optional output - if F is not specified in input, F will be calculated)
     """
 
@@ -713,7 +758,7 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
     elif Thin - Tcout < Ta:
         raise ValueError('Minimum temperature not fulfilled for hot inlet / cold outlet side!')
 
-    mc /= 3600  # convert kg/h to kg/s
+    mc /= 3600.  # convert kg/h to kg/s
 
     Q = mc * cpc * (Tcout - Tcin)  # calculate heat transfer rate
 
@@ -734,7 +779,7 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
             S = np.sqrt(R ** 2 + 1) / (R - 1)
             F = S * np.log(W) / np.log((1 + W - S + S * W) / (1 + W + S - S * W))
 
-    A = Q / (U * F * LMTD)
+    area = Q / (U * F * LMTD)
 
     HX = HeatExc()
     HX.mh = None
@@ -748,9 +793,9 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
     HX.U = U
     HX.F = F
     HX.Ns = Ns
-    HX.A = A
+    HX.area = area
 
-    return A, F, HX
+    return area, F, HX
 
 
 def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
@@ -766,7 +811,7 @@ def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
     elif Thin - Tcout < Ta:
         raise ValueError('Minimum temperature not fulfilled for hot inlet / cold outlet side!')
 
-    mh /= 3600  # convert kg/h to kg/s
+    mh /= 3600.  # convert kg/h to kg/s
 
     Q = mh * cph * (Thin - Thout)  # calculate heat transfer rate
 
@@ -787,7 +832,7 @@ def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
             S = np.sqrt(R ** 2 + 1) / (R - 1)
             F = S * np.log(W) / np.log((1 + W - S + S * W) / (1 + W + S - S * W))
 
-    A = Q / (U * F * LMTD)
+    area = Q / (U * F * LMTD)
 
     HX = HeatExc()
     HX.mh = mh
@@ -801,6 +846,6 @@ def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
     HX.U = U
     HX.F = F
     HX.Ns = Ns
-    HX.A = A
+    HX.area = area
 
-    return A, F, HX
+    return area, F, HX

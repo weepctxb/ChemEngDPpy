@@ -53,7 +53,7 @@ Functions:
 
 - dsg.sizeHE_cooler - conducts heat exchanger sizing for cooling stream
 
-To call intermediate functions (e.g. calculate shell thickness, calculate max. allowable stress, calculate wind allowance etc.), refer to documentation (call `help dsg`).
+To call intermediate functions (e.g. calculate shell thickness, calculate max. allowable stress, calculate wind allowance etc.), refer to documentation within code.
 
 ------------------------------------------------
 
@@ -86,8 +86,6 @@ Functions:
 - capex.totmodcost - calculates total module cost
 
 - capex.grasscost - calculates grassroots cost
-
-To do: Import relevant data on constants for MOC and pressure factors as needed, only if there are significant benefits of doing so.
 
 ------------------------------------------------
 
@@ -125,10 +123,10 @@ Constants:
 
 Functions:
 
-- opex.operatorspershift - calculates # operators per shift
-
 - opex.labourcost - calculates annualised labour cost
 
 - opex.costofutil - calculates cost of utilities
 
 - opex.costofmanfc - calculates all components of annualised total cost of manufacture (COM)
+
+To call intermediate functions (e.g. calculate number of operators per shift etc.), refer to documentation within code.

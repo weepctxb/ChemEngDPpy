@@ -141,3 +141,19 @@ def grasscost(CTM, Cpo):
     CGR = CTM + 0.5 * Cpo
 
     return CGR
+
+
+def annualcapex(FCI, pbp=3):
+
+    """
+    Estimate total annualised cost based on assumed payback period.
+    :param FCI: fixed capital investment (= CTM or total module cost for brownfield projects, or =CGR or grassroots cost
+    for greenfield projects) ($)
+    :param pbp: payback period estimate (yr, default = 3). If a value of pbp is assumed, note that this should only be
+    used for optimisation purposes! Alternatively, calculate pbp based on projected revenue estimates.
+    :return: ACC: annualised capital cost estimate ($/yr)
+    """
+
+    ACC = FCI / pbp
+
+    return ACC
