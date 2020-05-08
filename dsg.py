@@ -43,6 +43,10 @@ class MechDesign(object):
         self.tE = tE
         self.tEC = tEC
 
+    def __repr__(self):
+        return 'MechDesign(Pd=%spsig, Td=%sdegF, tsfinal=%sin, L=%sin, Do=%sin, W=%slb, V=%sin^3)' \
+               % (round(self.Pd, 2), self.Td, self.tsfinal, self.L, self.Do, int(self.W), int(self.V))
+
 
 class Impellers(object):
     def __init__(self, numimpel=None, impelpower=None, impeltype=None):
@@ -50,21 +54,35 @@ class Impellers(object):
         self.impelpower = impelpower
         self.impeltype = impeltype
 
+    def __repr__(self):
+        return 'Impellers(numimpel=%s, impelpower=%skW, impeltype=%s)' \
+               % (self.numimpel, self.impelpower, self.impeltype)
+
 
 class Trays(object):
     def __init__(self, numtrays=None, traytype=None):
         self.numtrays = numtrays
         self.traytype = traytype
 
+    def __repr__(self):
+        return 'Trays(numtrays=%s, traytype=%s)' \
+               % (self.numtrays, self.traytype)
+
 
 class Reactor(MechDesign, Impellers):
     def __init__(self):
         super().__init__(self)
 
+    def __repr__(self):
+        return super().__init__(self)
+
 
 class Distillation(MechDesign, Trays):
     def __init__(self):
         super().__init__(self)
+
+    def __repr__(self):
+        return super().__init__(self)
 
 
 class Compressor(object):
@@ -81,6 +99,10 @@ class Compressor(object):
         self.compeff = compeff
         self.comppower = comppower
 
+    def __repr__(self):
+        return 'Compressor(P1=%s, P2=%s, compeff=%s, comppower=%skW)' \
+               % (self.P1, self.P2, round(self.compeff, 3), round(self.comppower, 3))
+
 
 class Pump(object):
     def __init__(self, Q=None, P1=None, P2=None, dP=None, rho=1000,
@@ -92,6 +114,10 @@ class Pump(object):
         self.rho = rho
         self.pumpeff = pumpeff
         self.pumppower = pumppower
+
+    def __repr__(self):
+        return 'Compressor(P1=%s, P2=%s, pumpeff=%s, pumppower=%skW)' \
+               % (self.P1, self.P2, round(self.pumpeff, 3), round(self.pumppower, 3))
 
 
 class HeatExc(object):
@@ -109,6 +135,10 @@ class HeatExc(object):
         self.F = F
         self.Ns = Ns
         self.area = area
+
+    def __repr__(self):
+        return 'HeatExc(Thin=%sdegC, Thout=%sdegC, Tcin=%sdegC, Tcout=%sdegC, F=%s, Ns=%s, area=%sm^2)' \
+               % (self.Thin, self.Thout, self.Tcin, self.Tcout, round(self.F, 3), self.Ns, round(self.area, 2))
 
 
 def stepwise_leq(a, b, x):
@@ -615,7 +645,7 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
     md.V = vesselvol(md.Do, L)
     md.Vi = np.pi * (Di ** 2.) / 4. * L
 
-    return
+    return md
 
 
 def sizecompressor(m, P1, P2, T1, cp, cv, Z=1.):
