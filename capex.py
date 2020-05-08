@@ -54,7 +54,7 @@ eqptcostlib = {
         'Utube': (4.1884, -0.2503, 0.1974, 10., 1000., 0.53),
         'kettle': (4.4646, -0.5277, 0.3955, 10., 1000., 0.59),
         'doublepipe': (3.3444, 0.2745, -0.0472, 1., 10., 0.59),
-        'multipipe': (2.7652, 0.7282,0.0783, 10., 100.)
+        'multipipe': (2.7652, 0.7282,0.0783, 10., 100., 0.6)
     },
     'vessel': {
         'horizontal': (3.5565, 0.3776, 0.0905, 0.1, 628., 0.5),
@@ -108,6 +108,93 @@ pressurefaclib = {
     }
 }
 
+
+# Equipment material factors
+# To access, e.g. baremodlib['pump']['centrifugal']['SS']
+matfaclib = {
+    'compressor': {
+        'centrifugal': {
+            'CS': 2.8,  # CS = carbon steel
+            'SS': 5.8 / 2.8,  # SS = stainless steel
+            'Ni': 11.5 / 2.8  # Ni = nickel alloy
+        },
+        'axial': {
+            'CS': 3.8,
+            'SS': 8.0 / 3.8,
+            'Ni': 15.9 / 3.8
+        },
+        'reciprocating': {
+            'CS': 3.4,
+            'SS': 7.0 / 3.4,
+            'Ni': 13.9 / 3.4
+        },
+        'rotary': {
+            'CS': 2.4,
+            'SS': 5.0 / 2.4,
+            'Ni': 9.9 / 2.4
+        }
+    },
+    'pump': {
+        'reciprocating': {
+            'Fe': 1.0,  # Fe = cast iron
+            'CS': 1.5,
+            'SS': 2.4,
+            'Ni': 4.0,
+            'Ti': 6.5  # Ti = titanium alloy
+        },
+        'positivedisp': {
+            'Fe': 1.0,
+            'CS': 1.4,
+            'SS': 2.7,
+            'Ni': 4.7,
+            'Ti': 10.7
+        },
+        'centrifugal': {
+            'Fe': 1.0,
+            'CS': 1.6,
+            'SS': 2.3,
+            'Ni': 4.4
+        }
+    },
+    'heatexc': {
+        HXtype: {
+            'CS/CS': 1.0,
+            'CS/SS': 1.8,
+            'SS/SS': 2.9,
+            'CS/Ni': 2.8,
+            'Ni/Ni': 3.8,
+            'CS/Ti': 4.6,
+            'Ti/Ti': 11.4
+        }
+        for HXtype in ['fixedtube', 'Utube', 'kettle', 'doublepipe', 'multipipe']
+    },
+    'vessel': {
+        vestype: {
+            'CS': 1.0,
+            'SS': 3.1,
+            'Ni': 7.1,
+            'Ti': 9.4
+        }
+        for vestype in ['horizontal', 'vertical']
+    },
+    'trays': {
+        'sieve': {
+            'CS': 1.0,
+            'SS': 1.8,
+            'Ni': 5.6
+        },
+        'valve': {
+            'CS': 1.0,
+            'SS': 1.8,
+            'Ni': 5.6
+        },
+        'demister': {
+            'SS': 1.0,
+            'FC': 1.8,  # FC = fluorocarbon
+            'Ni': 5.6
+        }
+    }
+}
 
 # Equipment bare module correlation parameters
 # A tuple of (B1, B2)
