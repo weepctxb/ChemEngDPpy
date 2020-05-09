@@ -8,8 +8,10 @@ The intention is to use these quickly as "black-box" functions for the purposes 
   - Download the required .py files directly to your project path; or
 
   - Use Git or checkout with SVN using the git URL.
-
-To use, download the required .py files into the same folder as your existing code, and call the following functions depending on your situation:
+  
+  - Then, see exampleruns.py for usage examples (it's very intuitive)
+  
+To use, download the required .py files into the same folder as your existing code, and call the following functions depending on your situation.
 
 Quick tip: Always use the function documentation to check the required units to avoid unit conversion errors!
 
@@ -63,13 +65,13 @@ Constants:
 
 - capex.CEPCI[20yy] - retrieves annual CEPCI index for 20yy (where yy = 01, 18 or 19)
 
-- capex.USSG[20yy] - retrieves USD:SGD forex rate for 20yy year-average
+- capex.USSG[20yy] - retrieves USD:SGD forex rate for 20yy year-average (where yy = 01, 18 or 19)
 
-- capex.CPI['zz'][20yy] - retrieves country zz's consumer price index (CPI) for 20yy year-average (where zz = 'SG' or 'US')
+- capex.CPI['zz'][20yy] - retrieves country zz's consumer price index (CPI) for 20yy year-average (where yy = 01, 16, 18 or 19 and zz = 'SG' or 'US')
 
   - Reference year for CAPCOST = 2001 (as of Turton et al. 5th Ed.)
 
-  - Reference year for utilities cost = 2018 (as of Turton et al. 5th Ed.)
+  - Reference year for utilities cost = 2016 (as of Turton et al. 5th Ed.)
 
 Functions:
 
