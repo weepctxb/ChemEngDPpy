@@ -1,5 +1,6 @@
 import numpy as np
 import warnings
+import capex
 
 Patm = 14.696  # Standard atmospheric pressure (psi)
 Patmb = 1.01325  # Standard atmospheric pressure (bar)
@@ -18,7 +19,9 @@ class MechDesign(object):
                  Pd=None, Td=None, MOC=None, Smax=None, E=0.85, tp=tmin, tc=None, ts=None, tsfinal=None,
                  tv=None, tw=None,
                  Do=None, W=None, V=None, Vi=None,
-                 EM=None, tE=None, tEC=None):
+                 EM=None, tE=None, tEC=None,
+                 category='vessel', etype=None, mat=None, id=None,
+                 Cpo=None, FP=None, FM=None, FBM=None, CBM=None, CTM=None, CGR=None, ACC=None):
         self.Po = Po
         self.To = To
         self.Di = Di
@@ -42,39 +45,95 @@ class MechDesign(object):
         self.EM = EM
         self.tE = tE
         self.tEC = tEC
+        self.category = category
+        self.etype = etype
+        self.mat = mat
+        self.id = id
+        self.Cpo = Cpo
+        self.FP = FP
+        self.FM = FM
+        self.FBM = FBM
+        self.CBM = CBM
+        self.CTM = CTM
+        self.CGR = CGR
+        self.ACC = ACC
 
     def __repr__(self):
-        return 'MechDesign(Pd=%spsig, Td=%sdegF, tsfinal=%sin, L=%sin, Do=%sin, W=%slb, V=%sin^3)' \
-               % (round(self.Pd, 2), self.Td, self.tsfinal, self.L, self.Do, int(self.W), int(self.V))
+        return '%s: MechDesign(Pd=%spsig, Td=%sdegF, tsfinal=%sin, L=%sin, Do=%sin, W=%slb, V=%sin^3, etype=%s, mat=%s)' \
+               % (self.id, round(self.Pd, 2), self.Td, self.tsfinal, self.L, self.Do, int(self.W), int(self.V), self.etype, self.mat)
+
+    def spec(self):
+        return '---Design specs for {}:---\n{}\n----------------------------'.format(self.id, vars(self))
+
+    def econ(self):
+        return '---Econ report for {}:---\nCpo=${}\nCBM=${}\nCTM=${}\nCGR=${}\nACC=${}\n----------------------------'.format(self.id, round(self.Cpo, 2), round(self.CBM, 2), round(self.CTM, 2), round(self.CGR, 2), round(self.ACC, 2))
 
 
-class Impellers(object):
-    def __init__(self, numimpel=None, impelpower=None, impeltype=None):
-        self.numimpel = numimpel
-        self.impelpower = impelpower
-        self.impeltype = impeltype
+class Mixer(object):
+    def __init__(self, mixerpower=None,
+                 category='mixer', etype=None, mat=None, id=None,
+                 Cpo=None, FP=None, FM=None, FBM=None, CBM=None, CTM=None, CGR=None, ACC=None):
+        self.mixerpower = mixerpower
+        self.category = category
+        self.etype = etype
+        self.mat = mat
+        self.id = id
+        self.Cpo = Cpo
+        self.FP = FP
+        self.FM = FM
+        self.FBM = FBM
+        self.CBM = CBM
+        self.CTM = CTM
+        self.CGR = CGR
+        self.ACC = ACC
 
     def __repr__(self):
-        return 'Impellers(numimpel=%s, impelpower=%skW, impeltype=%s)' \
-               % (self.numimpel, self.impelpower, self.impeltype)
+        return '%s: Mixer(mixerpower=%skW, etype=%s, mat=%s)' \
+               % (self.id, self.mixerpower, self.etype, self.mat)
+
+    def spec(self):
+        return '---Design specs for {}:---\n{}\n----------------------------'.format(self.id, vars(self))
+
+    def econ(self):
+        return '---Econ report for {}:---\nCpo=${}\nCBM=${}\nCTM=${}\nCGR=${}\nACC=${}\n----------------------------'.format(self.id, round(self.Cpo, 2), round(self.CBM, 2), round(self.CTM, 2), round(self.CGR, 2), round(self.ACC, 2))
 
 
 class Trays(object):
-    def __init__(self, numtrays=None, traytype=None):
+    def __init__(self, numtrays=None, area=None,
+                 category='trays', etype=None, mat=None, id=None,
+                 Cpo=None, FP=None, FM=None, FBM=None, CBM=None, CTM=None, CGR=None, ACC=None):
         self.numtrays = numtrays
-        self.traytype = traytype
+        self.area = area
+        self.category = category
+        self.etype = etype
+        self.mat = mat
+        self.id = id
+        self.Cpo = Cpo
+        self.FP = FP
+        self.FM = FM
+        self.FBM = FBM
+        self.CBM = CBM
+        self.CTM = CTM
+        self.CGR = CGR
+        self.ACC = ACC
 
     def __repr__(self):
-        return 'Trays(numtrays=%s, traytype=%s)' \
-               % (self.numtrays, self.traytype)
+        return '%s: Trays(numtrays=%s, area=%s, etype=%s, mat=%s)' \
+               % (self.id, self.numtrays, self.area, self.etype, self.mat)
+
+    def spec(self):
+        return '---Design specs for {}:---\n{}\n----------------------------'.format(self.id, vars(self))
+
+    def econ(self):
+        return '---Econ report for {}:---\nCpo=${}\nCBM=${}\nCTM=${}\nCGR=${}\nACC=${}\n----------------------------'.format(self.id, round(self.Cpo, 2), round(self.CBM, 2), round(self.CTM, 2), round(self.CGR, 2), round(self.ACC, 2))
 
 
-class Reactor(MechDesign, Impellers):
+class Reactor(MechDesign, Mixer):
     def __init__(self):
         super().__init__(self)
 
     def __repr__(self):
-        return super().__init__(self)
+        return super().__repr__(self)
 
 
 class Distillation(MechDesign, Trays):
@@ -82,12 +141,14 @@ class Distillation(MechDesign, Trays):
         super().__init__(self)
 
     def __repr__(self):
-        return super().__init__(self)
+        return super().__repr__(self)
 
 
 class Compressor(object):
     def __init__(self, m=None, P1=Patm, P2=None, T1=Troom, T2=None, cp=None, cv=None, Z=None,
-                 compeff=None, comppower=None):
+                 compeff=None, comppower=None,
+                 category='compressor', etype=None, mat=None, id=None,
+                 Cpo=None, FP=None, FM=None, FBM=None, CBM=None, CTM=None, CGR=None, ACC=None):
         self.m = m
         self.P1 = P1
         self.P2 = P2
@@ -98,15 +159,35 @@ class Compressor(object):
         self.Z = Z
         self.compeff = compeff
         self.comppower = comppower
+        self.category = category
+        self.etype = etype
+        self.mat = mat
+        self.id = id
+        self.Cpo = Cpo
+        self.FP = FP
+        self.FM = FM
+        self.FBM = FBM
+        self.CBM = CBM
+        self.CTM = CTM
+        self.CGR = CGR
+        self.ACC = ACC
 
     def __repr__(self):
-        return 'Compressor(P1=%s, P2=%s, compeff=%s, comppower=%skW)' \
-               % (self.P1, self.P2, round(self.compeff, 3), round(self.comppower, 3))
+        return '%s: Compressor(P1=%sbar, P2=%sbar, compeff=%s, comppower=%skW, etype=%s, mat=%s)' \
+               % (self.id, self.P1, self.P2, round(self.compeff, 3), round(self.comppower, 3), self.etype, self.mat)
+
+    def spec(self):
+        return '---Design specs for {}:---\n{}\n----------------------------'.format(self.id, vars(self))
+
+    def econ(self):
+        return '---Econ report for {}:---\nCpo=${}\nCBM=${}\nCTM=${}\nCGR=${}\nACC=${}\n----------------------------'.format(self.id, round(self.Cpo, 2), round(self.CBM, 2), round(self.CTM, 2), round(self.CGR, 2), round(self.ACC, 2))
 
 
 class Pump(object):
     def __init__(self, Q=None, P1=None, P2=None, dP=None, rho=1000,
-                 pumpeff=0.75, pumppower=None):
+                 pumpeff=0.75, pumppower=None,
+                 category='pump', etype=None, mat=None, id=None,
+                 Cpo=None, FP=None, FM=None, FBM=None, CBM=None, CTM=None, CGR=None, ACC=None):
         self.Q = Q
         self.P1 = P1
         self.P2 = P2
@@ -114,15 +195,35 @@ class Pump(object):
         self.rho = rho
         self.pumpeff = pumpeff
         self.pumppower = pumppower
+        self.category = category
+        self.etype = etype
+        self.mat = mat
+        self.id = id
+        self.Cpo = Cpo
+        self.FP = FP
+        self.FM = FM
+        self.FBM = FBM
+        self.CBM = CBM
+        self.CTM = CTM
+        self.CGR = CGR
+        self.ACC = ACC
 
     def __repr__(self):
-        return 'Compressor(P1=%s, P2=%s, pumpeff=%s, pumppower=%skW)' \
-               % (self.P1, self.P2, round(self.pumpeff, 3), round(self.pumppower, 3))
+        return '%s: Pump(P1=%skPa, P2=%skPa, pumpeff=%s, pumppower=%skW, etype=%s, mat=%s)' \
+               % (self.id, self.P1, self.P2, round(self.pumpeff, 3), round(self.pumppower, 3), self.etype, self.mat)
+
+    def spec(self):
+        return '---Design specs for {}:---\n{}\n----------------------------'.format(self.id, vars(self))
+
+    def econ(self):
+        return '---Econ report for {}:---\nCpo=${}\nCBM=${}\nCTM=${}\nCGR=${}\nACC=${}\n----------------------------'.format(self.id, round(self.Cpo, 2), round(self.CBM, 2), round(self.CTM, 2), round(self.CGR, 2), round(self.ACC, 2))
 
 
 class HeatExc(object):
     def __init__(self, mh=None, mc=None, cph=None, cpc=None, Thin=None, Thout=None, Tcin=None, Tcout=None,
-                 U=None, F=0.9, Ns=1, area=None):
+                 U=None, F=0.9, Ns=1, area=None, P=None,
+                 category='heatexc', etype=None, mat=None, id=None,
+                 Cpo=None, FP=None, FM=None, FBM=None, CBM=None, CTM=None, CGR=None, ACC=None):
         self.mh = mh
         self.mc = mc
         self.cph = cph
@@ -135,10 +236,29 @@ class HeatExc(object):
         self.F = F
         self.Ns = Ns
         self.area = area
+        self.P = P
+        self.category = category
+        self.etype = etype
+        self.mat = mat
+        self.id = id
+        self.Cpo = Cpo
+        self.FP = FP
+        self.FM = FM
+        self.FBM = FBM
+        self.CBM = CBM
+        self.CTM = CTM
+        self.CGR = CGR
+        self.ACC = ACC
 
     def __repr__(self):
-        return 'HeatExc(Thin=%sdegC, Thout=%sdegC, Tcin=%sdegC, Tcout=%sdegC, F=%s, Ns=%s, area=%sm^2)' \
-               % (self.Thin, self.Thout, self.Tcin, self.Tcout, round(self.F, 3), self.Ns, round(self.area, 2))
+        return '%s: HeatExc(Thin=%sdegC, Thout=%sdegC, Tcin=%sdegC, Tcout=%sdegC, F=%s, Ns=%s, area=%sm^2, etype=%s, mat=%s)' \
+               % (self.id, self.Thin, self.Thout, self.Tcin, self.Tcout, round(self.F, 3), self.Ns, round(self.area, 2), self.etype, self.mat)
+
+    def spec(self):
+        return '---Design specs for {}:---\n{}\n----------------------------'.format(self.id, vars(self))
+
+    def econ(self):
+        return '---Econ report for {}:---\nCpo=${}\nCBM=${}\nCTM=${}\nCGR=${}\nACC=${}\n----------------------------'.format(self.id, round(self.Cpo, 2), round(self.CBM, 2), round(self.CTM, 2), round(self.CGR, 2), round(self.ACC, 2))
 
 
 def stepwise_leq(a, b, x):
@@ -473,19 +593,21 @@ def vesselvol(Do, L):
     return V
 
 
-def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B'):
+def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B', etype='horizontal', mat='SS', id='UnnamedVessel'):
 
     """
     The main function to be called for designing horizontal pressure vessels
     Example implementation:
-    mechdesign1 = designhorzpres(Di=78, L=480, Po=470, To=850)
+    md = designhorzpres(Di=78, L=480, Po=470, To=850)
     :param Di: internal diameter (in)
     :param L: tangent-to-tangent horizontal length (in)
     :param Po: most deviated operating pressure from ambient pressure (psig)
     :param To: most deviated operating temperature from ambient temperature (degF)
     :param rho: density of material of construction (lb/in^3, optional)
-    :param MOC: material of construction (string, optional)
-    :return: md: MechDesign class consisting of:
+    :param MOC: material of construction (string e.g. '387B' [default] or '317L' etc., optional)
+    :param mat: category of material of construction (string e.g. 'CS' or 'SS' [default] etc., optional)
+    :param id: id/name of equipment (string, e.g. V100, optional)
+    :return: md: MechDesign object (optional) consisting of:
     Pd = design pressure (psig)
     Td = design pressure (degF)
     MOC = material of construction to use (string)
@@ -520,22 +642,36 @@ def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B'):
     md.V = vesselvol(md.Do, L)
     md.Vi = np.pi * (Di ** 2.) / 4. * L
 
+    md.id = id
+    md.category = 'vessel'
+    md.etype = 'horizontal'
+    if mat is not None:
+        md.mat = mat if mat in capex.matfaclib['vessel']['horizontal'].keys() else None
+    else:
+        md.mat = 'SS' if MOC in ['317L', '316L', '304'] else 'CS' if MOC in ['285C', '387B', 'low-alloy', 'carbon'] else 'Ti' if MOC in ['316Ti'] else None
+    if md.mat is None:
+        md.mat = 'SS'
+        warnings.warn('Type of MOC (mat variable) cannot be identified and is assumed to be stainless steel! ' +
+                      'You can specify a mat input (mat=' + capex.matfaclib['vessel']['horizontal'].keys())
+
     return md
 
 
-def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B'):
+def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B', etype='vertical', mat='SS', id='UnnamedVessel'):
 
     """
     The main function to be called for designing vertical pressure vessels
     Example implementation:
-    mechdesign2 = designhorzpres(Di=120, L=2544, Po=95.5, To=150)
+    md = designhorzpres(Di=120, L=2544, Po=95.5, To=150)
     :param Di: internal diameter (in)
     :param L: tangent-to-tangent horizontal height (in)
     :param Po: most deviated operating pressure from ambient pressure (psig)
     :param To: most deviated operating temperature from ambient temperature (degF)
     :param rho: density of material of construction (lb/in^3, optional)
-    :param MOC: material of construction (string, optional)
-    :return: md: MechDesign class consisting of:
+    :param MOC: material of construction (string e.g. '387B' [default] or '317L' etc., optional)
+    :param mat: category of material of construction (string e.g. 'CS' or 'SS' [default] etc., optional)
+    :param id: id/name of equipment (string, e.g. V100, optional)
+    :return: md: MechDesign object (optional) consisting of:
     Pd = design pressure (psig)
     Td = design pressure (degF)
     MOC = material of construction to use (string)
@@ -572,20 +708,38 @@ def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B'):
     md.V = vesselvol(md.Do, L)
     md.Vi = np.pi * (Di ** 2.) / 4. * L
 
+    md.id = id
+    md.category = 'vessel'
+    md.etype = 'vertical'
+    if mat is not None:
+        md.mat = mat if mat in capex.matfaclib['vessel']['horizontal'].keys() else None
+    else:
+        md.mat = 'SS' if MOC in ['317L', '316L', '304'] else 'CS' if MOC in ['285C', '387B', 'low-alloy', 'carbon'] else 'Ti' if MOC in ['316Ti'] else None
+    if md.mat is None:
+        md.mat = 'SS'
+        warnings.warn('Type of MOC (mat variable) cannot be identified and is assumed to be stainless steel! ' +
+                      'You can specify a mat input (mat=' + capex.matfaclib['vessel']['vertical'].keys())
+
+
     return md
 
 
-def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
+def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon', etype=None, mat='CS', id='UnnamedVessel'):
 
     """
     The main function to be called for designing vacuum vessels
+    Example implementation:
+    md = dsg.designvac(Di=168., L=1080., Po=7.977, To=257.)
     :param Di: internal diameter (in)
     :param L: tangent-to-tangent horizontal length/height (in)
     :param Po: most deviated operating pressure from ambient pressure (psig)
     :param To: most deviated operating temperature from ambient temperature (degF)
     :param rho: density of material of construction (lb/in^3, optional)
-    :param MOC: material of construction (string, optional)
-    :return: md: MechDesign class consisting of:
+    :param MOC: material of construction (string e.g. 'carbon' as default, optional)
+    :param etype: type of vessel ('horizontal' or 'vertical')
+    :param mat: category of material of construction (string e.g. 'CS' [default] or 'SS' etc., optional)
+    :param id: id/name of equipment (string, e.g. V100, optional)
+    :return: md: MechDesign object (optional) consisting of:
     Pd = design pressure (psig)
     Td = design pressure (degF)
     MOC = material of construction to use (string)
@@ -635,8 +789,8 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
         ts1 = shellthkhorz(md.tp)
 
     if i == 1e3:
-        warnings.warn('Vacuum vessel thickness failed to converge!' +
-                      ' Nevertheless carrying on with calculation - beware!')
+        warnings.warn('Vacuum vessel thickness failed to converge! ' +
+                      'Nevertheless carrying on with calculation - beware!')
 
     md.ts = ts1
     md.tsfinal = ceilplatethk(md.ts)
@@ -645,26 +799,47 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon'):
     md.V = vesselvol(md.Do, L)
     md.Vi = np.pi * (Di ** 2.) / 4. * L
 
+    md.id = id
+    md.category = 'vessel'
+    if etype is None:
+        etype = 'vertical'
+        warnings.warn('Assuming vacuum vessel is vertical! ' +
+                      'You can specify a etype input (etype=' + str(capex.eqptcostlib['vessel'].keys()))
+    md.etype = str.lower(etype) if (str.lower(etype) in capex.eqptcostlib['vessel'].keys()) else None
+
+    if mat is not None:
+        md.mat = mat if mat in capex.matfaclib['vessel']['horizontal'].keys() else None
+    else:
+        md.mat = 'SS' if MOC in ['317L', '316L', '304'] else 'CS' if MOC in ['285C', '387B', 'low-alloy', 'carbon'] else 'Ti' if MOC in ['316Ti'] else None
+    if md.mat is None:
+        md.mat = 'CS'
+        warnings.warn('Type of MOC (mat variable) cannot be identified and is assumed to be carbon steel! ' +
+                      'You can specify a mat input (mat=' + str(capex.matfaclib['vessel']['vertical'].keys()))
+
     return md
 
 
-def sizecompressor(m, P1, P2, T1, cp, cv, Z=1.):
+def sizecompressor(m, P1, P2, T1, cp, cv, Z=1., etype=None, mat=None, id='UnnamedCompressor'):
 
     """
     Conducts compressor sizing by determining required compressor power
     based on its flow rate and inlet/outlet pressures
     Example implementation:
-    [comppower, compeff, T2] = dsg.sizecompressor(1e5,1,4,323.15,1.5,1.4,0.96)
+    comppower, compeff, T2, compressor = dsg.sizecompressor(m=1e5, P1=100, P2=300, T1=323.15, cp=1.02, cv=0.72, Z=0.99)
     :param m: mass flow rate through compressor (kg/h)
-    :param P1: gas inlet pressure (any pressure units)
-    :param P2: gas inlet pressure (same pressure unit as P1)
+    :param P1: gas inlet pressure (bar)
+    :param P2: gas inlet pressure (bar)
     :param T1: gas inlet temperature (K)
     :param cp: constant-pressure heat capacity of gas
     :param cv: constant-volume heat capacity of gas
     :param Z: gas compressibility factor (optional, default = 1)
+    :param etype: type of equipment (string, e.g. 'centrifugal' [default] or 'axial' etc., optional)
+    :param mat: category of material of construction (string e.g. 'CS' or 'SS' [default] etc., optional)
+    :param id: id/name of equipment (string, e.g. K100, optional)
     :return: comppower: required compressor power (kW)
     :return: compeff: compressor efficiency (optional, dimensionless)
     :return: gas outlet temperature (optional, K)
+    :return: compressor: Compressor object (optional)
     """
 
     if P2/P1 > 4.:
@@ -704,22 +879,41 @@ def sizecompressor(m, P1, P2, T1, cp, cv, Z=1.):
     compressor.compeff = compeff
     compressor.comppower = comppower
 
+    compressor.id = id
+    compressor.category = 'compressor'
+    if etype is None:
+        etype = 'centrifugal'
+        warnings.warn('Assuming compressor is centrifugal! ' +
+                      'You can specify a etype input (etype=' + str(capex.eqptcostlib['compressor'].keys()))
+    compressor.etype = str.lower(etype) if (str.lower(etype) in capex.eqptcostlib['compressor'].keys()) else None
+
+    if mat is None:
+        mat = 'SS'
+        warnings.warn('Assuming compressor material is stainless steel! ' +
+                      'You can specify a mat input (mat=' + str(capex.matfaclib['compressor']['centrifugal'].keys()))
+    compressor.mat = mat if (mat in capex.matfaclib['compressor']['centrifugal'].keys()) else None
+
     return comppower, compeff, T2, compressor
 
 
-def sizepump(Q, dP=None, P1=None, P2=None, rho=1000., pumpeff=None):
+def sizepump(Q, dP=None, P1=None, P2=None, rho=1000., pumpeff=None, etype=None, mat=None, id='UnnamedPump'):
 
     """
     Conducts pump sizing by determining required pump power
     based on its flow rate and pressure differential (discharge - suction pressure)
+    Example implementation:
+    pumppower, pumpeff, pump = dsg.sizepump(Q=35, dP=500)
     :param Q: volumetric flow rate through pump (m^3/h)
-    :param dP: pressure differential (kPa)
     :param P1: suction/inlet pressure (kPa)
     :param P2: discharge/outlet pressure (kPa)
     :param rho: stream density (kg/m^3) (optional, default = 1000)
     :param pumpeff: pump efficiency (optional, default = 0.75)
+    :param etype: type of equipment (string, e.g. 'centrifugal' [default] or 'reciprocating' etc., optional)
+    :param mat: category of material of construction (string e.g. 'CS' or 'SS' [default] etc., optional)
+    :param id: id/name of equipment (string, e.g. P100, optional)
     :return: pumppower = required pump power (kW)
     :return: pumpeff  = pump efficiency (optional output - if it is not specified in input, it will be calculated)
+    :return: pump: Pump object (optional)
     """
 
     if dP is None:
@@ -760,28 +954,46 @@ def sizepump(Q, dP=None, P1=None, P2=None, rho=1000., pumpeff=None):
     pump.pumpeff = pumpeff
     pump.pumppower = pumppower
 
+    pump.id = id
+    pump.category = 'pump'
+    if etype is None:
+        etype = 'centrifugal'
+        warnings.warn('Assuming pump is centrifugal! ' +
+                      'You can specify a type einput (etype=' + str(capex.eqptcostlib['pump'].keys()))
+    pump.etype = str.lower(etype) if (str.lower(etype) in capex.eqptcostlib['pump'].keys()) else None
+
+    if mat is None:
+        mat = 'SS'
+        warnings.warn('Assuming pump material is stainless steel! ' +
+                      'You can specify a mat input (mat=' + str(capex.matfaclib['pump']['centrifugal'].keys()))
+    pump.mat = mat if (mat in capex.matfaclib['pump']['centrifugal'].keys()) else None
+
     return pumppower, pumpeff, pump
 
 
-def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
+def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1, etype=None, mat=None, P=None, id='UnnamedHX'):
 
     """
     Conducts shell-and-tube heat exchanger sizing (counterflow arrangement), where cold process stream is heated,
     by determining required heat exchange area
     Example implementation:
-    area, F = dsg.sizeHE_heater(31715,3246,89,101,160,156,850)
+    area, F, HX = dsg.sizeHE_heater(mc=31715, cpc=3246, Tcin=89, Tcout=101, Thin=160, Thout=156, U=850)
     :param mc: cold stream mass flow rate (kg/h)
     :param cpc: heat capacity of cold stream % J/(kg.K)
     :param Tcin: cold stream inlet temperature (degC)
     :param Tcout: cold stream outlet temperature (degC)
-    :param cph: hot stream inlet temperature (degC)
     :param Thin: hot stream inlet temperature (degC)
     :param Thout: hot stream outlet temperature (degC)
     :param U: heat transfer coefficient (W/(m^2.degC))
     :param F: user-specified correction factor (if not specified, F will be calculated)
     :param Ns: number of shell passes (default = 1)
+    :param etype: type of equipment (string, e.g. 'utube' [default] or 'doublepipe' etc., optional)
+    :param mat: category of material of construction (string e.g. 'CS/CS' or 'SS/CS' [default] etc., optional)
+    :param id: id/name of equipment (string, e.g. HX100, optional)
+    :param P: operating pressure, for cost calculation purposes only (bar, optional)
     :return: area: required heat exchange area (m^2)
     :return: F: correction factor (optional output - if F is not specified in input, F will be calculated)
+    :return: HX: HeatExc object (optional)
     """
 
     if Thout > Thin:
@@ -805,16 +1017,16 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
         LMTD = ((Thin-Tcout) - (Thout-Tcin)) / np.log((Thin-Tcout) / (Thout-Tcin))
 
     if F is None:
-        R = (Thin - Thout) / (Tcout - Tcin)
-        P = (Tcout - Tcin) / (Thin - Tcin)
-        if R == 1:
-            W = (Ns - Ns * P) / (Ns - Ns * P + P)
-            F = (np.sqrt(2) * (1 - W) / W) / \
-                (np.log(W / (1 - W) + 1 / np.sqrt(2)) / np.log(W / (1 - W) - 1 / np.sqrt(2)))
+        r = (Thin - Thout) / (Tcout - Tcin)
+        p = (Tcout - Tcin) / (Thin - Tcin)
+        if r == 1:
+            w = (Ns - Ns * p) / (Ns - Ns * p + p)
+            F = (np.sqrt(2) * (1 - w) / w) / \
+                (np.log(w / (1 - w) + 1 / np.sqrt(2)) / np.log(w / (1 - w) - 1 / np.sqrt(2)))
         else:
-            W = pow((1 - P * R) / (1 - P), 1 / Ns)
-            S = np.sqrt(R ** 2 + 1) / (R - 1)
-            F = S * np.log(W) / np.log((1 + W - S + S * W) / (1 + W + S - S * W))
+            w = pow((1 - p * r) / (1 - p), 1 / Ns)
+            s = np.sqrt(r ** 2 + 1) / (r - 1)
+            F = s * np.log(w) / np.log((1 + w - s + s * w) / (1 + w + s - s * w))
 
     area = Q / (U * F * LMTD)
 
@@ -831,11 +1043,49 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1):
     HX.F = F
     HX.Ns = Ns
     HX.area = area
+    HX.P = P
+
+    HX.id = id
+    HX.category = 'heatexc'
+    if etype is None:
+        etype = 'utube'
+        warnings.warn('Assuming heat exchanger is U-tube! ' +
+                      'You can specify a etype input (etype=' + str(capex.eqptcostlib['heatexc'].keys()))
+    HX.etype = str.lower(etype) if (str.lower(etype) in capex.eqptcostlib['heatexc'].keys()) else None
+
+    if mat is None:
+        mat = 'CS/SS'
+        warnings.warn('Assuming hext exchanger material is carbon steel/stainless steel (or vice versa)! ' +
+                      'You can specify a mat input (mat=' + str(capex.matfaclib['heatexc']['utube'].keys()))
+    HX.mat = mat if (mat in capex.matfaclib['heatexc']['utube'].keys()) else None
 
     return area, F, HX
 
 
-def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
+def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1, etype=None, mat=None, P=None, id='UnnamedHX'):
+
+    """
+    Conducts shell-and-tube heat exchanger sizing (counterflow arrangement), where hot process stream is cooled,
+    by determining required heat exchange area
+    Example implementation:
+    area, F, HX = dsg.sizeHE_cooler(mh=31715, cph=3246, Thin=89, Thout=60, Tcin=5, Tcout=10, U=850)
+    :param mh: hot stream mass flow rate (kg/h)
+    :param cph: heat capacity of hot stream % J/(kg.K)
+    :param Thin: hot stream inlet temperature (degC)
+    :param Thout: hot stream outlet temperature (degC)
+    :param Tcin: cold stream inlet temperature (degC)
+    :param Tcout: cold stream outlet temperature (degC)
+    :param U: heat transfer coefficient (W/(m^2.degC))
+    :param F: user-specified correction factor (if not specified, F will be calculated)
+    :param Ns: number of shell passes (default = 1)
+    :param etype: type of equipment (string, e.g. 'utube' [default] or 'doublepipe' etc., optional)
+    :param mat: category of material of construction (string e.g. 'CS/CS' or 'SS/CS' [default] etc., optional)
+    :param id: id/name of equipment (string, e.g. HX100, optional)
+    :param P: operating pressure, for cost calculation purposes only (bar, optional)
+    :return: area: required heat exchange area (m^2)
+    :return: F: correction factor (optional output - if F is not specified in input, F will be calculated)
+    :return: HX: HeatExc object (optional)
+    """
 
     if Thout > Thin:
         raise ValueError('Hot stream outlet cannot be hotter than inlet!')
@@ -858,16 +1108,16 @@ def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
         LMTD = ((Thin - Tcout) - (Thout - Tcin)) / np.log((Thin - Tcout) / (Thout - Tcin))
 
     if F is None:
-        R = (Thin - Thout) / (Tcout - Tcin)
-        P = (Tcout - Tcin) / (Thin - Tcin)
-        if R == 1:
-            W = (Ns - Ns * P) / (Ns - Ns * P + P)
-            F = (np.sqrt(2) * (1 - W) / W) / \
-                (np.log(W / (1 - W) + 1 / np.sqrt(2)) / np.log(W / (1 - W) - 1 / np.sqrt(2)))
+        r = (Thin - Thout) / (Tcout - Tcin)
+        p = (Tcout - Tcin) / (Thin - Tcin)
+        if r == 1:
+            w = (Ns - Ns * p) / (Ns - Ns * p + p)
+            F = (np.sqrt(2) * (1 - w) / w) / \
+                (np.log(w / (1 - w) + 1 / np.sqrt(2)) / np.log(w / (1 - w) - 1 / np.sqrt(2)))
         else:
-            W = pow((1 - P * R) / (1 - P), 1 / Ns)
-            S = np.sqrt(R ** 2 + 1) / (R - 1)
-            F = S * np.log(W) / np.log((1 + W - S + S * W) / (1 + W + S - S * W))
+            w = pow((1 - p * r) / (1 - p), 1 / Ns)
+            s = np.sqrt(r ** 2 + 1) / (r - 1)
+            F = s * np.log(w) / np.log((1 + w - s + s * w) / (1 + w + s - s * w))
 
     area = Q / (U * F * LMTD)
 
@@ -884,5 +1134,20 @@ def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1):
     HX.F = F
     HX.Ns = Ns
     HX.area = area
+    HX.P = P
+
+    HX.id = id
+    HX.category = 'heatexc'
+    if etype is None:
+        etype = 'utube'
+        warnings.warn('Assuming heat exchanger is U-tube! ' +
+                      'You can specify a etype input (etype=' + str(capex.eqptcostlib['heatexc'].keys()))
+    HX.etype = str.lower(etype) if (str.lower(etype) in capex.eqptcostlib['heatexc'].keys()) else None
+
+    if mat is None:
+        HX.mat = 'CS/SS'
+        warnings.warn('Assuming hext exchanger material is carbon steel/stainless steel (or vice versa)! ' +
+                      'You can specify a mat input (mat=' + str(capex.matfaclib['heatexc']['utube'].keys()))
+    HX.mat = mat if (mat in capex.matfaclib['heatexc']['utube'].keys()) else None
 
     return area, F, HX
