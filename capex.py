@@ -455,6 +455,7 @@ def baremodfac(Btuple=None, FM=None, FP=None, eqpt=None):
         return FBM
     else:
         eqpt.FBM = FBM
+        eqpt.FM = FM
         return FBM, eqpt
 
 
@@ -564,7 +565,7 @@ def grasscost(CTM=None, Cpo=None, eqpt=None):
         return CGR, eqpt
 
 
-def annualcapex(FCI=None, pbp=3, eqpt=None, planttype='brown'):
+def annualcapex(FCI=None, pbp=None, eqpt=None, planttype='brown'):
 
     """
     Estimate total annualised capital cost based on assumed payback period
@@ -582,8 +583,9 @@ def annualcapex(FCI=None, pbp=3, eqpt=None, planttype='brown'):
     :return: ACC: annualised capital cost estimate ($/yr)
     """
 
-    if pbp == 3:
-        warnings.warn('pbp may not have been specified - 3 years is assumed')
+    if pbp is None:
+        pbp = 3
+        warnings.warn('Payback period (pbp) not specified - 3 years is assumed')
 
     if FCI is not None:
         pass
