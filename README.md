@@ -1,19 +1,121 @@
 # ChemEngDPpy
 Python code for mechanical design, sizing &amp; capex/opex calculations
 
-The intention is to use these quickly as "black-box" functions for the purposes for TAC optimization in the second half of the detail design of the main equipment (e.g. PFR length, selection of pumps/compressors etc.)
+The intention is to use these quickly as "black-box" functions for the purposes for TAC optimization in the
+detailed design of the main equipment (e.g. PFR wall thickness requirement, sizing of pumps/compressors etc.)
 
 - ***QUICK START***:
 
-  - Download the required .py files directly to your project path; or
+  - Download the required `.py` files directly to your project path; or
 
   - Use Git or checkout with SVN using the git URL.
   
-  - Then, see exampleruns.py for usage examples (it's very intuitive)
+  - Then, see `exampleruns.py` for usage examples (it's very intuitive)
   
-To use, download the required .py files into the same folder as your existing code, and call the following functions depending on your situation.
+To use, download the required `.py` files into the same folder as your existing code, and call the following
+functions depending on your situation.
 
 Quick tip: Always use the function documentation to check the required units to avoid unit conversion errors!
+
+------------------------------------------------
+
+## Project Structure
+
+- dsg: For Mechanical Design & Ancillary Equipment Sizing
+
+- capex: For CAPEX Calculation and Reporting
+
+- opex: For OPEX Calculation and Reporting
+
+------------------------------------------------
+
+## Implementation Methods
+
+
+There are two major methods for using this library:
+
+1. *Method 1 (scalar framework)*: Using scalar input - scalar output to retrieve only the key design variables; or
+
+2. *Method 2 (OOP framework)*: Using the library's object-oriented programming (OOP) framework.
+Generally, common chemical plant equipment (vessels, pumps, compressors, heat exchangers etc.)
+are also created as optional outputs and inputs for the various functions.
+
+For example in equipment design, use:
+
+```python
+comppower, compeff, T2, _ = dsg.sizecompressor(m=1e5, P1=100, P2=300, T1=323.15, cp=1.02, cv=0.72, Z=0.99)
+```
+
+to just retrieve the power rating and temperature of the sized compressor as well as its estimated adiabatic efficiency
+(as in Method 1), or use:
+
+```python
+_, _, _, K100 = dsg.sizecompressor(m=1e5, P1=100, P2=300, T1=323.15, cp=1.02, cv=0.72, Z=0.99,
+etype='rotary', mat='CS', id='K400')
+```
+
+to create a `Compressor()` object containing all relevant design inputs (i.e. the inputs), design variables
+(i.e. `comppower`, `compeff` and `T2`) and additional tags.
+
+Additional tags can be supplied in the equipment object creation for ease of cost estimation later, such as:
+
+- `category` for equipment category (e.g. pumps, compressors etc. - automatically created when the respective
+dsg.size(...) or dsg.design(...) functions are called - see below or docstrings)
+
+- `etype` for equipment type (e.g. centrifugal pumps, rotary pumps etc. - see `capex` documentation below for
+list of supported chemical plant equipments)
+
+- `mat` for material type (e.g. carbon steel, stainless steel, cast iron etc. - see `capex` documentation
+below for list of supported material types)
+
+- `id` to specify an equipment name for semantic purposes
+
+- `P` to specify a designed operating pressure for equipment where pressure is neither a required design input
+nor a design variable. Most notably, this include heat exchangers whereby the pressure specification is only to
+determine the pressure factor `FP` for capital cost estimation of heat exhchangers.
+
+Key exceptions to this include:
+
+- Mechanical design for pressure/vacuum vessels is only conducted using the OOP framework (Method 2), due the 
+large number of critical design variables in the mechanical design.
+
+- For reactors and distillation columns, design the pressure/vacuum vessel and internals (e.g. distillation trays, 
+mixers/impellers, packings) separately, as combined object support is not available yet (#TODO).
+
+- CAPEX reporting can only be conducted using the OOP framework (Method 2).
+
+As another example in capital cost estimation for equipment, use
+
+1. *Method 1 (scalar framework)*:
+
+```python
+capex.eqptpurcost(A=20, Ktuple=(3.5565, 0.3776, 0.0905, 0.1, 628., 0.5))
+```
+
+to size a horizontal vessel of volume `A` = 20 m^3, and then calling all the subsequent functions in order (see `capex`
+documentation). However, using
+
+2. *Method 2 (OOP framework)*:
+
+```python
+capex.eqptpurcost(eqpt=V100)
+```
+
+, where `V100` is the output (a `MechDesign()` object in this context) retrieved from `dsg.designvertpres`,
+is so much easier. But in fact using the OOP framework (Method 2), we can just create a list of all the relevant
+equipment objects and perform the entire capex estimation directly:
+
+```python
+eqptlist = [V100, V200, V300, K400, K500, P600, P700, HX800, HX900]
+FCI, capexreport = capex.econreport(eqptlist, planttype='green', pbp=3, year=2019, currency='SGD', \
+                                    reporttype='numpy', verbose=True)
+```
+
+See `exampleruns.py` for more sample implementations.
+
+A further use of the OOP framework (Method 2) would be to perform optimization on equipment type or material selection,
+using the tags `etype`, `mat` etc. as categorical decision variables for capex minimization.
+However, this implementation is left to the user to do. (#TODO add example)
 
 ------------------------------------------------
 
@@ -93,9 +195,9 @@ Supported equipment categories, types and materials (`mat`):
  
  - `compressor`
    - `centrifugal`, `axial`, `reciprocating`, `rotary`
-   - ``CS`` (carbon steel)
-   - ``SS`` (stainless steel)
-   - ``Ni`` (nickel alloy)
+   - `CS` (carbon steel)
+   - `SS` (stainless steel)
+   - `Ni` (nickel alloy)
    
  - `pump`
     - `reciprocating`, `positivedisp`
@@ -103,7 +205,7 @@ Supported equipment categories, types and materials (`mat`):
         - `CS`
         - `SS`
         - `Ni`
-        - ti (titanium alloy)
+        - `Ti` (titanium alloy)
     - `centrifugal`
         - `Fe`
         - `CS`
@@ -112,13 +214,13 @@ Supported equipment categories, types and materials (`mat`):
        
  - `heatexc`
     - `fixedtube`, `utube`, `kettle`, `doublepipe`, `multipipe`
-       - `CS`/`CS`
-       - `CS`/`SS` and `SS`/`CS` (shell/tube order does not matter)
-       - `SS`/`SS`
-       - `CS`/`Ni` and `Ni`/`CS`
-       - `Ni`/`Ni`
-       - `CS`/`Ti` and `Ti`/`CS`
-       - `Ti`/`Ti`
+       - `CS/CS`
+       - `CS/SS` and `SS/CS` (shell/tube order does not matter)
+       - `SS/SS`
+       - `CS/Ni` and `Ni/CS`
+       - `Ni/Ni`
+       - `CS/Ti` and `Ti/CS`
+       - `Ti/Ti`
        
  - `vessel`
     - `horizontal`, `vertical`
@@ -153,7 +255,9 @@ Functions:
 
 - `capex.grasscost` - calculates grassroots cost (`CGR`)
 
-- `capex.annualcapex` - calculates total annualised capital cost estimated (`ACC`), based on an assumed payback period (`pbp`)
+- `capex.annualcapex` - calculates total annualised capital cost estimated (`ACC`),
+based on an assumed payback period (`pbp`). If a value of pbp is assumed, note that this should only be
+used for ACC estimation for optimization purposes! Alternatively, calculate pbp based on projected revenue estimates.
 
 ------------------------------------------------
 
@@ -196,6 +300,8 @@ Functions:
 - `opex.costofraw` - calculates annualised cost of raw materials (`CRM`)
 
 - `opex.costofutil` - calculates annualised cost of utilities (`CUT`)
+
+- `opex.costofwaste` - (placeholder function for user's customised waste treatment calculation)
 
 - `opex.costofmanfc` - calculates all components of annualised total cost of manufacture (`COM`)
 
