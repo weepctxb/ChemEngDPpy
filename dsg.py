@@ -297,7 +297,7 @@ def stepwise_req(a, b, x):
     return y
 
 
-def designP(Po):
+def designP(Po: float) -> float:
 
     """
     Calculate design pressure for pressure and vacuum vessels
@@ -313,7 +313,7 @@ def designP(Po):
     return Pd
 
 
-def designT(To, heuristic='towler'):
+def designT(To: float, heuristic: str='towler') -> float:
 
     """
     Calculate design temperature for pressure and vacuum vessels
@@ -337,7 +337,7 @@ def designT(To, heuristic='towler'):
     return Td
 
 
-def maxstress(Td, MOC='387B'):
+def maxstress(Td: float, MOC: str='387B') -> (float, float):
 
     """
     Calculate maximum allowable stress for pressure vessel material
@@ -388,7 +388,7 @@ def maxstress(Td, MOC='387B'):
     return Smax, MOC
 
 
-def elasmod(Td, MOC='carbon'):
+def elasmod(Td: float, MOC :str='carbon') -> (float, float):
 
     """
     Calculate modulus of elasticity for vacuum vessel material
@@ -416,7 +416,7 @@ def elasmod(Td, MOC='carbon'):
     return EM, MOC
 
 
-def wallthk(Pd, Di, Smax):
+def wallthk(Pd: float, Di: float, Smax: float) -> (float, float):
 
     """
     Calculate cylindrical shell wall thickness for pressure vessels, including minimum thickness check for structural rigidity
@@ -443,7 +443,7 @@ def wallthk(Pd, Di, Smax):
     return tp, E
 
 
-def wallthkvac(Pd, Do, Di, L, EM):
+def wallthkvac(Pd: float, Do: float, Di: float, L: float, EM: float) -> (float, float, float):
 
     """
     Calculate cylindrical shell wall thickness for vacuum vessels
@@ -469,7 +469,7 @@ def wallthkvac(Pd, Do, Di, L, EM):
     return tp, tE, tEC
 
 
-def shellthkhorz(tp):
+def shellthkhorz(tp: float) -> float:
 
     """
     Calculate shell thickness for horizontal vessels
@@ -482,7 +482,7 @@ def shellthkhorz(tp):
     return ts
 
 
-def windalw(Do, L, Smax):
+def windalw(Do: float, L: float, Smax: float) -> float:
 
     """
     Calculate wind/earthquake allowance for vertical vessels
@@ -500,7 +500,7 @@ def windalw(Do, L, Smax):
     return tw
 
 
-def shellthkvert(tp, Di, L, Smax):
+def shellthkvert(tp: float, Di: float, L: float, Smax: float) -> (float, float, float):
 
     """
     Calculate shell thickness for vertical vessels
@@ -538,7 +538,7 @@ def shellthkvert(tp, Di, L, Smax):
     return ts, tv, tw
 
 
-def ceilplatethk(ts):
+def ceilplatethk(ts: float) -> float:
 
     """
     Round up metal plate thickness to nearest increment
@@ -560,7 +560,7 @@ def ceilplatethk(ts):
     return tsfinal
 
 
-def vesselweight(Di, tsfinal, L, rho=rhosteel):
+def vesselweight(Di: float, tsfinal: float, L: float, rho: float=rhosteel) -> float:
 
     """
     Calculate final weight of vessel of the vessel with the shell and two 2:1 elliptical heads
@@ -576,7 +576,7 @@ def vesselweight(Di, tsfinal, L, rho=rhosteel):
     return W
 
 
-def vesselvol(Do, L):
+def vesselvol(Do: float, L: float) -> float:
 
     """
     Calculate final external volume of vessel with the shell and two 2:1 elliptical heads
@@ -593,7 +593,8 @@ def vesselvol(Do, L):
     return V
 
 
-def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B', etype='horizontal', mat='SS', id='UnnamedVessel'):
+def designhorzpres(Di: float, L: float, Po: float=Patm, To: float=Troom, rho: float=rhosteel, MOC: str='387B',
+                   mat: str='SS', id: str='UnnamedVessel') -> MechDesign():
 
     """
     The main function to be called for designing horizontal pressure vessels
@@ -657,7 +658,8 @@ def designhorzpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B', etype='ho
     return md
 
 
-def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B', etype='vertical', mat='SS', id='UnnamedVessel'):
+def designvertpres(Di: float, L: float, Po: float=Patm, To: float=Troom, rho: float=rhosteel,
+                   MOC: str='387B', mat: str='SS', id: str='UnnamedVessel') -> MechDesign():
 
     """
     The main function to be called for designing vertical pressure vessels
@@ -720,11 +722,11 @@ def designvertpres(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='387B', etype='ve
         warnings.warn('Type of MOC (mat variable) cannot be identified and is assumed to be stainless steel! ' +
                       'You can specify a mat input (mat=' + capex.matfaclib['vessel']['vertical'].keys())
 
-
     return md
 
 
-def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon', etype=None, mat='CS', id='UnnamedVessel'):
+def designvac(Di: float, L: float, Po: float=Patm, To: float=Troom, rho: float=rhosteel,
+              MOC: str='carbon', etype: str=None, mat: str='CS', id: str='UnnamedVessel') -> MechDesign():
 
     """
     The main function to be called for designing vacuum vessels
@@ -819,7 +821,8 @@ def designvac(Di, L, Po=Patm, To=Troom, rho=rhosteel, MOC='carbon', etype=None, 
     return md
 
 
-def sizecompressor(m, P1, P2, T1, cp, cv, Z=1., etype=None, mat=None, id='UnnamedCompressor'):
+def sizecompressor(m: float, P1: float, P2: float, T1: float, cp: float, cv: float, Z: float=1.,
+                   etype: str=None, mat: str=None, id: str='UnnamedCompressor') -> (float, float, float, Compressor()):
 
     """
     Conducts compressor sizing by determining required compressor power
@@ -896,7 +899,8 @@ def sizecompressor(m, P1, P2, T1, cp, cv, Z=1., etype=None, mat=None, id='Unname
     return comppower, compeff, T2, compressor
 
 
-def sizepump(Q, dP=None, P1=None, P2=None, rho=1000., pumpeff=None, etype=None, mat=None, id='UnnamedPump'):
+def sizepump(Q: float, dP: float=None, P1: float=None, P2: float=None, rho: float=1000., pumpeff: float=None,
+             etype: str=None, mat: str=None, id: str='UnnamedPump') -> (float, float, Pump()):
 
     """
     Conducts pump sizing by determining required pump power
@@ -971,7 +975,9 @@ def sizepump(Q, dP=None, P1=None, P2=None, rho=1000., pumpeff=None, etype=None, 
     return pumppower, pumpeff, pump
 
 
-def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1, etype=None, mat=None, P=None, id='UnnamedHX'):
+def sizeHE_heater(mc: float, cpc: float, Tcin: float, Tcout: float, Thin: float, Thout: float,
+                  U: float, F: float=None, Ns: int=1, etype: str=None, mat: str=None,
+                  P: float=None, id: str='UnnamedHX') -> (float, float, HeatExc()):
 
     """
     Conducts shell-and-tube heat exchanger sizing (counterflow arrangement), where cold process stream is heated,
@@ -1062,7 +1068,9 @@ def sizeHE_heater(mc, cpc, Tcin, Tcout, Thin, Thout, U, F=None, Ns=1, etype=None
     return area, F, HX
 
 
-def sizeHE_cooler(mh, cph, Thin, Thout, Tcin, Tcout, U, F=None, Ns=1, etype=None, mat=None, P=None, id='UnnamedHX'):
+def sizeHE_cooler(mh: float, cph: float, Thin: float, Thout: float, Tcin: float, Tcout: float,
+                  U: float, F: float=None, Ns: int=1, etype: str=None, mat: str=None,
+                  P: float=None, id: str='UnnamedHX') -> (float, float, HeatExc()):
 
     """
     Conducts shell-and-tube heat exchanger sizing (counterflow arrangement), where hot process stream is cooled,

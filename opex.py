@@ -1,6 +1,7 @@
 import numpy as np
 import capex
 import time
+from typing import List, Tuple, Any
 
 runtime = 8000  # Operational runtime (h/yr)
 shiftdur = 8  # Duration per workshift (h/shift)
@@ -23,7 +24,7 @@ utilprice = {
 }
 
 
-def operatorspershift(P=0, Nnp=0):
+def operatorspershift(P: int=0, Nnp: int=0):
 
     """
     Calculate number of operators per shift
@@ -38,7 +39,7 @@ def operatorspershift(P=0, Nnp=0):
     return NOL
 
 
-def labourcost(P=None, Nnp=None, wage=42750., eqptlist=None):
+def labourcost(P: int=None, Nnp: int=None, wage: float=42750., eqptlist: List[Any]=None) -> (float, float):
 
     """
     Calculate annualised labour cost
@@ -77,7 +78,9 @@ def labourcost(P=None, Nnp=None, wage=42750., eqptlist=None):
     return COL, Nop
 
 
-def costofutil(utiltuple=None, HPS=0., MPS=0., LPS=0., CW=0., ChW=0., LTR=0., VLTR=0., elec=0., year=2019, currency='SGD'):
+def costofutil(utiltuple: Tuple[float]=None, HPS: float=0., MPS: float=0., LPS: float=0.,
+               CW: float=0., ChW: float=0., LTR: float=0., VLTR: float=0., elec: float=0.,
+               year: int=2019, currency: str='SGD'):
 
     """
     Calculates the annualised cost of utilities
@@ -113,7 +116,7 @@ def costofutil(utiltuple=None, HPS=0., MPS=0., LPS=0., CW=0., ChW=0., LTR=0., VL
     return CUT
 
 
-def costofraw(rawmaterialtuple=(0.,), unitpricetuple=(0.,)):
+def costofraw(rawmaterialtuple: Tuple[float]=(0.,), unitpricetuple: Tuple[float]=(0.,)) -> float:
 
     """
     Calculates the annualised cost of raw materials
@@ -141,7 +144,8 @@ def costofraw(rawmaterialtuple=(0.,), unitpricetuple=(0.,)):
     return CRM
 
 
-def costofmanfc(FCI=0., COL=0., CRM=0., CWT=0., CUT=0., verbose=False):
+def costofmanfc(FCI: float=0., COL: float=0., CRM: float=0., CWT: float=0., CUT: float=0.,
+                verbose: bool=False) -> (float, float, float, float, float, float, dict):
 
     """
     Estimate annualised cost of manufacture.

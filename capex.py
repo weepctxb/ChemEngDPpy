@@ -2,6 +2,7 @@ import numpy as np
 import dsg
 import warnings
 import time
+from typing import Tuple, Any, List
 
 # CEPCI Index
 # To access, e.g. CEPCI[2019]
@@ -79,7 +80,7 @@ eqptcostlib = {
 
 # Equipment pressure factor correlation parameters
 # A tuple of (C1, C2, C3, Pmin, Pmax)
-# where (C1, C2, C3) = cost correlation params, (Pmin, Pmax) = min/max pressure (range of validity)
+# where (C1, C2, C3) = pressure factor correlation params, (Pmin, Pmax) = min/max pressure (range of validity)
 # To access, e.g. pressurefaclib['pump']['centrifugal']
 pressurefaclib = {
     'compressor': {
@@ -243,7 +244,7 @@ baremodlib = {
 }
 
 
-def eqptpurcost(A=None, Ktuple=None, eqpt=None):
+def eqptpurcost(A: float=None, Ktuple: Tuple[float]=None, eqpt: Any=None) -> (float, Any):
 
     """
     Calculate equipment purchased cost (Cp^o) cost at ambient pressure and using carbon steel as MOC
@@ -302,7 +303,7 @@ def eqptpurcost(A=None, Ktuple=None, eqpt=None):
         return Cpo, eqpt
 
 
-def pressurefacves(D=None, ts=None, P=None, eqpt=None):
+def pressurefacves(D: float=None, ts: float=None, P: float=None, eqpt: Any=None) -> (float, Any):
 
     """
     Calculate pressure factor (F_P) for vessels
@@ -346,7 +347,7 @@ def pressurefacves(D=None, ts=None, P=None, eqpt=None):
         return FP, eqpt
 
 
-def pressurefacanc(P=None, Ctuple=None, eqpt=None):
+def pressurefacanc(P: float=None, Ctuple: Tuple[float]=None, eqpt: Any=None) -> (float, Any):
 
     """
     Calculate pressure factor (F_P) for ancillary equipment (e.g. pumps and exchangers)
@@ -413,7 +414,7 @@ def pressurefacanc(P=None, Ctuple=None, eqpt=None):
         return FP, eqpt
 
 
-def baremodfac(Btuple=None, FM=None, FP=None, eqpt=None):
+def baremodfac(Btuple: Tuple[float]=None, FM: float=None, FP: float=None, eqpt: Any=None) -> (float, Any):
 
     """
     Calculate bare module factor (F_BM) at specified elevated pressure and MOC
@@ -495,7 +496,7 @@ def baremodcost(Cpo=None, FBM=None, eqpt=None):
         return CBM, eqpt
 
 
-def totmodcost(CBM=None, eqpt=None):
+def totmodcost(CBM: float=None, eqpt: float=None) -> (float, Any):
 
     """
     Calculate total module cost (CTM) at specified elevated pressure and MOC
@@ -529,7 +530,7 @@ def totmodcost(CBM=None, eqpt=None):
         return CTM, eqpt
 
 
-def grasscost(CTM=None, Cpo=None, eqpt=None):
+def grasscost(CTM: float=None, Cpo: float=None, eqpt: Any=None) -> (float, Any):
 
     """
     Calculate grassroots cost (CGR)
@@ -565,7 +566,7 @@ def grasscost(CTM=None, Cpo=None, eqpt=None):
         return CGR, eqpt
 
 
-def annualcapex(FCI=None, pbp=None, eqpt=None, planttype='brown'):
+def annualcapex(FCI: float=None, pbp: float=None, eqpt: Any=None, planttype: str='brown') -> (float, Any):
 
     """
     Estimate total annualised capital cost based on assumed payback period
@@ -609,7 +610,8 @@ def annualcapex(FCI=None, pbp=None, eqpt=None, planttype='brown'):
         return ACC, eqpt
 
 
-def econreport(eqptlist, planttype='green', reporttype='numpy', pbp=3, year=2019, currency='SGD', verbose=False):
+def econreport(eqptlist: List[Any], planttype: str='green', reporttype: str='numpy',
+               pbp: float=3., year: int=2019, currency: str='SGD', verbose: bool=False) -> (float, Any):
 
     """
     Generates an economic capex report of the plant
