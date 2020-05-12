@@ -144,6 +144,12 @@ def costofraw(rawmaterialtuple: Tuple[float]=(0.,), unitpricetuple: Tuple[float]
     return CRM
 
 
+def costofwaste():
+    # TODO User has to create this function on his/her own if necessary,
+    # because there are many possible sources of waste treatment
+    raise NotImplementedError
+
+
 def costofmanfc(FCI: float=0., COL: float=0., CRM: float=0., CWT: float=0., CUT: float=0.,
                 verbose: bool=False) -> (float, float, float, float, float, float, dict):
 
