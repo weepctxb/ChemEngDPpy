@@ -15,7 +15,11 @@ detailed design of the main equipment (e.g. PFR wall thickness requirement, sizi
 To use, download the required `.py` files into the same folder as your existing code, and call the following
 functions depending on your situation.
 
-Quick tip: Always use the function documentation to check the required units to avoid unit conversion errors!
+Quick tips:
+
+- Always use the docstrings to check the required units to avoid unit conversion errors!
+
+- Use named arguments as far as possible to avoid ambiguities!
 
 ------------------------------------------------
 
@@ -31,18 +35,44 @@ Quick tip: Always use the function documentation to check the required units to 
 
 ## Implementation Methods
 
+Quick tip: Always use the docstrings to check the required units to avoid unit conversion errors, and use
+ named arguments as far as possible to avoid ambiguities!
+
+Some definitions first:
+
+- ***Design inputs***: Properties that are critical and required to conduct equipment design/sizing
+
+- ***Design variables***: Properties that are determined after conducting equipment design/sizing
+
+- ***Additional tags***: Properties that are not critical to equipment design/sizing,
+but are important for the purposes of cost estimation.
+These can be supplied in the equipment object creation for ease of cost estimation later
+
+For example:
+
+- *Pressure* is a *design input* for vessels (to determine final shell thickness),
+a *design variable* for pumps/compressor (to determine power requirement),
+and is an *additional tag* for heat exchangers (to determine pressure factor)
+
+- *Volume* is a *design variable* for vessels, but is not relevant for other equipment categories
+
+- Operating temperature is a *design input* for vessels (to determine final shell thickness based on MOC properties),
+a *design input* for heat exchangers (to determine heat exchange area)
+a *design variable* for compressors (specifically the outlet temperature),
+and is not relevant to pumps (pump sizing in this library assumes negligible temperature change)
 
 There are two major methods for using this library:
 
-1. *Method 1 (scalar framework)*: Using scalar input - scalar output to retrieve only the key design variables; or
+1. ***Method 1 (scalar framework)***: Using scalar input - scalar output to retrieve only the key design variables; or
 
-2. *Method 2 (OOP framework)*: Using the library's object-oriented programming (OOP) framework.
+2. ***Method 2 (OOP framework)***: Using the library's object-oriented programming (OOP) framework.
 Generally, common chemical plant equipment (vessels, pumps, compressors, heat exchangers etc.)
-are also created as optional outputs and inputs for the various functions.
+are also created as optional outputs and alternative inputs for the various functions.
 
 For example in equipment design, use:
 
 ```python
+# Method 1 (scalar framework)
 comppower, compeff, T2, _ = dsg.sizecompressor(m=1e5, P1=100, P2=300, T1=323.15, cp=1.02, cv=0.72, Z=0.99)
 ```
 
@@ -50,6 +80,7 @@ to just retrieve the power rating and temperature of the sized compressor as wel
 (as in Method 1), or use:
 
 ```python
+# Method 2 (OOP framework)
 _, _, _, K100 = dsg.sizecompressor(m=1e5, P1=100, P2=300, T1=323.15, cp=1.02, cv=0.72, Z=0.99,
 etype='rotary', mat='CS', id='K400')
 ```
@@ -59,37 +90,42 @@ to create a `Compressor()` object containing all relevant design inputs (i.e. th
 
 Additional tags can be supplied in the equipment object creation for ease of cost estimation later, such as:
 
-- `category` for equipment category (e.g. pumps, compressors etc. - automatically created when the respective
-dsg.size(...) or dsg.design(...) functions are called - see below or docstrings)
+- `category` for **equipment category** (e.g. pumps, compressors etc. - automatically created when the respective
+`dsg.size(...)` or `dsg.design(...)` functions are called - see below or docstrings)
 
-- `etype` for equipment type (e.g. centrifugal pumps, rotary pumps etc. - see `capex` documentation below for
+- `etype` for **equipment type** (e.g. centrifugal pumps, rotary pumps etc. - see `capex` documentation below for
 list of supported chemical plant equipments)
 
-- `mat` for material type (e.g. carbon steel, stainless steel, cast iron etc. - see `capex` documentation
+- `mat` for **material type** (e.g. carbon steel, stainless steel, cast iron etc. - see `capex` documentation
 below for list of supported material types)
 
-- `id` to specify an equipment name for semantic purposes
+- `id` to specify an **equipment name** for semantic purposes
 
 - `P` to specify a designed operating pressure for equipment where pressure is neither a required design input
 nor a design variable. Most notably, this include heat exchangers whereby the pressure specification is only to
-determine the pressure factor `FP` for capital cost estimation of heat exhchangers.
+determine the pressure factor `FP` for capital cost estimation of heat exchangers.
 
 Key exceptions to this include:
 
-- Mechanical design for pressure/vacuum vessels is only conducted using the OOP framework (Method 2), due the 
+- Mechanical design for pressure/vacuum vessels is *only* conducted using the OOP framework (Method 2), due the 
 large number of critical design variables in the mechanical design.
 
 - For reactors and distillation columns, design the pressure/vacuum vessel and internals (e.g. distillation trays, 
-mixers/impellers, packings) separately, as combined object support is not available yet (#TODO).
+mixers/impellers, packings) *separately* (i.e. as separate objects), as combined object support is not available yet (#TODO).
 
-- CAPEX reporting can only be conducted using the OOP framework (Method 2).
+- CAPEX reporting can *only* be conducted using the OOP framework (Method 2).
 
 As another example in capital cost estimation for equipment, use
 
 1. *Method 1 (scalar framework)*:
 
 ```python
+# Method 1 (scalar framework)
+# manually supply cost coefficients, min/max capacity for validity range (optional),
+# exponential factor for extrapolation (optional)...
 capex.eqptpurcost(A=20, Ktuple=(3.5565, 0.3776, 0.0905, 0.1, 628., 0.5))
+# ... or just retrieve from capex.eqptcostlib
+capex.eqptpurcost(A=20, Ktuple=capex.eqptcostlib['vessel']['horizontal'])
 ```
 
 to size a horizontal vessel of volume `A` = 20 m^3, and then calling all the subsequent functions in order (see `capex`
@@ -98,11 +134,14 @@ documentation). However, using
 2. *Method 2 (OOP framework)*:
 
 ```python
+# Method 2 (OOP framework)
 capex.eqptpurcost(eqpt=V100)
 ```
 
 , where `V100` is the output (a `MechDesign()` object in this context) retrieved from `dsg.designvertpres`,
-is so much easier. But in fact using the OOP framework (Method 2), we can just create a list of all the relevant
+is so much easier.
+
+In fact, using the OOP framework (Method 2), we can just create a list of all the relevant
 equipment objects and perform the entire capex estimation directly:
 
 ```python
@@ -113,9 +152,19 @@ FCI, capexreport = capex.econreport(eqptlist, planttype='green', pbp=3, year=201
 
 See `exampleruns.py` for more sample implementations.
 
-A further use of the OOP framework (Method 2) would be to perform optimization on equipment type or material selection,
-using the tags `etype`, `mat` etc. as categorical decision variables for capex minimization.
-However, this implementation is left to the user to do. (#TODO add example)
+Further possible uses of the OOP framework (Method 2) could be to:
+
+- Perform optimization on equipment type or material selection,
+using the tags `etype`, `mat` etc. as categorical decision variables for capex minimization
+
+- Determine the best type of heat exchanger and utilities to use by minizing both capex and opex. This is similar
+to above, with utilities selection being an additional categorical decision variable which influences both
+heat exchange area and cost of utilities.
+
+- Find the optimal configuration for multi-stage compression with minimal electricity consumption and stream cooling,
+using the number of compressors, compression ratios, heat exchange area for cooling etc. as decision variables.
+
+However, this implementation is left to the user to do. (#TODO add examples)
 
 ------------------------------------------------
 
@@ -195,9 +244,9 @@ Supported equipment categories, types and materials (`mat`):
  
  - `compressor`
    - `centrifugal`, `axial`, `reciprocating`, `rotary`
-   - `CS` (carbon steel)
-   - `SS` (stainless steel)
-   - `Ni` (nickel alloy)
+       - `CS` (carbon steel)
+       - `SS` (stainless steel)
+       - `Ni` (nickel alloy)
    
  - `pump`
     - `reciprocating`, `positivedisp`
